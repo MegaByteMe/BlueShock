@@ -18,27 +18,24 @@ Pitfalls:
 
 package team7.blueshock;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothManager;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.SeekBar;
-import android.widget.TextView;
-import android.widget.Toast;
+        import android.bluetooth.BluetoothAdapter;
+        import android.bluetooth.BluetoothManager;
+        import android.content.Context;
+        import android.content.Intent;
+        import android.content.pm.PackageManager;
+        import android.os.Build;
+        import android.support.v7.app.AppCompatActivity;
+        import android.os.Bundle;
+        import android.view.View;
+        import android.widget.Button;
+        import android.widget.SeekBar;
+        import android.widget.TextView;
+        import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView barText;                           // Text threshold bar value feedback
-    private SeekBar sBar;                               // SeekBar which sets Threshold value
-    private Button sButt;
-    private BluetoothAdapter mBluetoothAdapter;
-    private static String ble_not_supported = "Bluetooth Low Energy capability could not be located";
+    private TextView barText;                           // gShock threshold value feedback
+    //private static String ble_not_supported = "Bluetooth Low Energy capability could not be located";
     private static int REQUEST_ENABLE_BT = 1;
 
     @Override
@@ -46,9 +43,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        final String ble_not_supported = "Bluetooth Low Energy capability could not be located";
         barText = (TextView) findViewById(R.id.threshText);
-        sBar = (SeekBar) findViewById(R.id.shockBar);
-        sButt = (Button) findViewById(R.id.button);
+        SeekBar sBar = (SeekBar) findViewById(R.id.shockBar); // gShock threshold user input element
+        Button sButt = (Button) findViewById(R.id.button);
 
         // OS Catch - Ensure minimum OS version that supports BLE
         if(Build.VERSION.SDK_INT < 18) {
@@ -60,17 +58,16 @@ public class MainActivity extends AppCompatActivity {
 
         // Init - Bluetooth
         final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        mBluetoothAdapter = bluetoothManager.getAdapter();
+        BluetoothAdapter myBTAdapter = bluetoothManager.getAdapter();
 
         // Hardware Catch - Determine if hardware has BLE capability
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            //Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
-            Toast.makeText(this, "error", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, ble_not_supported, Toast.LENGTH_SHORT).show();
             finish();
         }
 
         // Hardware Catch - Determine if Bluetooth is enabled, if not request enable
-        if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
+        if (myBTAdapter == null || !myBTAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
@@ -97,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void buttonClick( View V ) {
-        Toast.makeText(this, new StringBuilder().append("you pushed my button ").append(barText.getText()).toString(), Toast.LENGTH_LONG).show();
+        Toast.makeText(this, new StringBuilder().append("you pushed my button ").append(barText.getText()).toString(), Toast.LENGTH_SHORT).show();
     }
 
     public void DBGkill( View V ) {
