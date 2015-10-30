@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">BlueShock</string>
+    <string name="SEND">SEND</string>
+    <string name="shockthreshold">Shock Threshold</string>
+    <string name="hello">Hello Nurse!</string>
+    <string name="dbgkbtn">DEBUG-KILL</string>
+</resources>
