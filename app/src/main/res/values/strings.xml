@@ -2,6 +2,10 @@
     <string name="app_name">BlueShock</string>
     <string name="SEND">SEND</string>
     <string name="shockthreshold">Shock Threshold</string>
-    <string name="hello">Hello Nurse!</string>
     <string name="dbgkbtn">DEBUG-KILL</string>
+    <string name="xplane">X Plane</string>
+    <string name="yplane">Y Plane</string>
+    <string name="zplane">Z Plane</string>
+    <string name="planesel">Select any axis you wish to monitor</string>
+    <string name="prog">Program Device</string>
 </resources>

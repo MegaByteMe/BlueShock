@@ -6,29 +6,23 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
 
-    <TextView android:text="@string/hello" android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textView2"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
-
     <SeekBar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/shockBar"
-        android:layout_centerVertical="true"
-        android:layout_alignParentEnd="true"
         android:max="200"
-        android:indeterminate="false" />
+        android:indeterminate="false"
+        android:layout_below="@+id/textView"
+        android:layout_alignParentEnd="true" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/SEND"
+        android:text="@string/prog"
         android:id="@+id/button"
         android:onClick="buttonClick"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -36,8 +30,9 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/shockthreshold"
         android:id="@+id/textView"
-        android:layout_above="@+id/shockBar"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="41dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -54,8 +49,42 @@
         android:layout_height="wrap_content"
         android:text="@string/dbgkbtn"
         android:id="@+id/dbgKBtn"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:onClick="DBGkill" />
+        android:onClick="DBGkill"
+        android:layout_above="@+id/button"
+        android:layout_alignParentStart="true" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/xplane"
+        android:id="@+id/checkBox"
+        android:layout_below="@+id/textView1"
+        android:layout_alignParentStart="true" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/yplane"
+        android:id="@+id/checkBox2"
+        android:layout_below="@+id/textView1"
+        android:layout_centerHorizontal="true" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/zplane"
+        android:id="@+id/checkBox3"
+        android:layout_below="@+id/textView1"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/planesel"
+        android:id="@+id/textView1"
+        android:layout_below="@+id/shockBar"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="68dp" />
 
 </RelativeLayout>
