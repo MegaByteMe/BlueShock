@@ -1,7 +1,12 @@
 <resources>
     <string name="app_name">BlueShock</string>
-    <string name="SEND">SEND</string>
+    <string name="SEND">Program Device</string>
     <string name="shockthreshold">Shock Threshold</string>
     <string name="hello">Hello Nurse!</string>
     <string name="dbgkbtn">DEBUG-KILL</string>
+    <string name="scan">Scan</string>
+    <string name="sel_axis">Select Axis to monitor</string>
+    <string name="xaxis">X Axis</string>
+    <string name="yaxis">Y Axis</string>
+    <string name="zaxis">Z Axis</string>
 </resources>
