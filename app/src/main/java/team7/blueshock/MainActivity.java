@@ -4,7 +4,7 @@ Developed by Team7
 
 Codename: BlueShock
 Revision:0
-Change:3
+Change:5
 
 Changelog:
     1. Built generic UI with SeekBar, Text, and Single Button
@@ -34,6 +34,8 @@ package team7.blueshock;
 
 public class MainActivity extends AppCompatActivity {
 
+    static boolean DEBUG = true;
+
     private TextView barText;                           // gShock threshold value feedback
     //private static String ble_not_supported = "Bluetooth Low Energy capability could not be located";
     private static int REQUEST_ENABLE_BT = 1;
@@ -48,28 +50,30 @@ public class MainActivity extends AppCompatActivity {
         SeekBar sBar = (SeekBar) findViewById(R.id.shockBar); // gShock threshold user input element
         Button sButt = (Button) findViewById(R.id.button);
 
-        // OS Catch - Ensure minimum OS version that supports BLE
-        if(Build.VERSION.SDK_INT < 18) {
-            // Detect if OS is lower then SDK 18 - first release supporting BLE
-            // If so terminate application - BLE does not exist on this platform
-            // TODO need graceful application termination and notification dialog
-            finish();
-        }
+        if(!DEBUG) {
+            // OS Catch - Ensure minimum OS version that supports BLE
+            if (Build.VERSION.SDK_INT < 18) {
+                // Detect if OS is lower then SDK 18 - first release supporting BLE
+                // If so terminate application - BLE does not exist on this platform
+                // TODO need graceful application termination and notification dialog
+                finish();
+            }
 
-        // Init - Bluetooth
-        final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        BluetoothAdapter myBTAdapter = bluetoothManager.getAdapter();
+            // Init - Bluetooth
+            final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+            BluetoothAdapter myBTAdapter = bluetoothManager.getAdapter();
 
-        // Hardware Catch - Determine if hardware has BLE capability
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Toast.makeText(this, ble_not_supported, Toast.LENGTH_SHORT).show();
-            finish();
-        }
+            // Hardware Catch - Determine if hardware has BLE capability
+            if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+                Toast.makeText(this, ble_not_supported, Toast.LENGTH_SHORT).show();
+                finish();
+            }
 
-        // Hardware Catch - Determine if Bluetooth is enabled, if not request enable
-        if (myBTAdapter == null || !myBTAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            // Hardware Catch - Determine if Bluetooth is enabled, if not request enable
+            if (myBTAdapter == null || !myBTAdapter.isEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            }
         }
 
         // UI Operation - Setup listener for user modifying the seek bar
@@ -94,7 +98,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void buttonClick( View V ) {
-        Toast.makeText(this, new StringBuilder().append("you pushed my button ").append(barText.getText()).toString(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "you pushed my button " + barText.getText().toString(), Toast.LENGTH_SHORT).show();
+    }
+
+    public void scanBtnClick( View V ) {
+        startActivity(new Intent(MainActivity.this, scanActivity.class));
     }
 
     public void DBGkill( View V ) {
