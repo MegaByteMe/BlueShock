@@ -23,7 +23,8 @@
         android:text="@string/cancel"
         android:id="@+id/scanBtn"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:onClick="cancelBtnClick" />
 
     <Button
         android:layout_width="wrap_content"
@@ -31,5 +32,7 @@
         android:text="@string/select"
         android:id="@+id/selBtn"
         android:layout_alignTop="@+id/button2"
-        android:layout_alignEnd="@+id/scrollView" />
+        android:layout_alignEnd="@+id/scrollView"
+        android:clickable="false"
+        android:onClick="selBtnClick" />
 </RelativeLayout>

@@ -1,5 +1,6 @@
 package team7.blueshock;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -11,6 +12,8 @@ public class scanActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scan);
+
+        Intent intent = getIntent();
     }
 
     public void scnBtnClick( View V ) {
@@ -19,5 +22,9 @@ public class scanActivity extends AppCompatActivity {
 
     public void cancelBtnClick( View V ) {
         finish();
+    }
+
+    public void selBtnClick( View V ) {
+
     }
 }

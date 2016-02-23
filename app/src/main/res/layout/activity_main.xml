@@ -19,9 +19,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/prog"
-        android:id="@+id/button"
-        android:onClick="buttonClick"
-        android:layout_alignParentBottom="true"
+        android:id="@+id/prgBtn"
+        android:onClick="prgBtnClick"
+        android:layout_above="@+id/dbgKBtn"
         android:layout_centerHorizontal="true" />
 
     <TextView
@@ -50,8 +50,8 @@
         android:text="@string/dbgkbtn"
         android:id="@+id/dbgKBtn"
         android:onClick="DBGkill"
-        android:layout_above="@+id/button"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true" />
 
     <CheckBox
         android:layout_width="wrap_content"
@@ -92,6 +92,7 @@
         android:layout_height="wrap_content"
         android:text="@string/scan"
         android:id="@+id/scanBtn"
+        android:onClick="scanBtnClick"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 

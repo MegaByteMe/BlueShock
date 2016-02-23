@@ -34,7 +34,10 @@ package team7.blueshock;
 
 public class MainActivity extends AppCompatActivity {
 
-    static boolean DEBUG = true;
+    // Allows UI emulation and testing in android studio
+    // true - disables ble/bt checks
+    // false - allows ble/bt checks - used for device testing / production release
+    static boolean DEBUG = true;                    // Allows emulation for android studio
 
     private TextView barText;                           // gShock threshold value feedback
     //private static String ble_not_supported = "Bluetooth Low Energy capability could not be located";
@@ -59,15 +62,16 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
 
-            // Init - Bluetooth
-            final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-            BluetoothAdapter myBTAdapter = bluetoothManager.getAdapter();
-
             // Hardware Catch - Determine if hardware has BLE capability
             if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
                 Toast.makeText(this, ble_not_supported, Toast.LENGTH_SHORT).show();
                 finish();
             }
+
+            // Init - Bluetooth
+            // TODO need better error returns for wrong OS / hardware
+            final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+            BluetoothAdapter myBTAdapter = bluetoothManager.getAdapter();
 
             // Hardware Catch - Determine if Bluetooth is enabled, if not request enable
             if (myBTAdapter == null || !myBTAdapter.isEnabled()) {
@@ -97,12 +101,17 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void buttonClick( View V ) {
+    public void prgBtnClick( View V) {
         Toast.makeText(this, "you pushed my button " + barText.getText().toString(), Toast.LENGTH_SHORT).show();
     }
 
     public void scanBtnClick( View V ) {
-        startActivity(new Intent(MainActivity.this, scanActivity.class));
+        //startActivity(new Intent(MainActivity.this, scanActivity.class));
+
+        Toast.makeText(this, "you pushed the scan button ", Toast.LENGTH_SHORT).show();
+
+        Intent intent = new Intent(this, scanActivity.class);
+        startActivity(intent);
     }
 
     public void DBGkill( View V ) {
