@@ -2,7 +2,7 @@
     <string name="app_name">BlueShock</string>
     <string name="SEND">Program Device</string>
     <string name="shockthreshold">Shock Threshold</string>
-    <string name="dbgkbtn">DEBUG-KILL</string>
+    <string name="dbgkbtn">DBG-Kill</string>
     <string name="xplane">X Plane</string>
     <string name="yplane">Y Plane</string>
     <string name="zplane">Z Plane</string>
@@ -12,4 +12,15 @@
     <string name="title_activity_splash">SplashActivity</string>
     <string name="cancel">Cancel</string>
     <string name="select">Select</string>
+    <string name="hello">Hello World, splash</string>
+    <string name="splashtext">Low Power Wireless Shock Detection System</string>
+    <string name="splashby">by The BLEGEEs</string>
+    <string name="splashimage">splashimage</string>
+    <string name="title_activity_detail">DetailActivity</string>
+    <string name="time">Time: </string>
+    <string name="date">Date: </string>
+    <string name="sid">Event Id: </string>
+    <string name="sval">Shock Value: </string>
+    <string name="dbgdets">DBG-Details</string>
+    <string name="dbgclear">DBG-Clear</string>
 </resources>

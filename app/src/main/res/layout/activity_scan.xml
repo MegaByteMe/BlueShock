@@ -35,4 +35,12 @@
         android:layout_alignEnd="@+id/scrollView"
         android:clickable="false"
         android:onClick="selBtnClick" />
+
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/scanView"
+        android:layout_below="@+id/scanBtn"
+        android:layout_alignParentStart="true"
+        android:choiceMode="singleChoice" />
 </RelativeLayout>
