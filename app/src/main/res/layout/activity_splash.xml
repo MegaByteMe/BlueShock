@@ -2,7 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 android:orientation="vertical" android:layout_width="fill_parent"
 android:layout_height="fill_parent"
-    android:background="#10f80c">
+    android:background="#10f80c"
+    android:gravity="center"
+    android:weightSum="1">
 
     <TextView
         android:layout_width="wrap_content"
@@ -21,10 +23,10 @@ android:layout_height="fill_parent"
         android:layout_gravity="right"
         android:textColor="#040404" />
 
-    <ImageView android:id="@+id/splash" android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
+    <ImageView android:id="@+id/splash" android:layout_width="593dp"
+    android:layout_height="229dp"
     android:src="@drawable/beegees"
         android:contentDescription="@string/splashimage"
-        android:layout_gravity="center_horizontal" />
+        android:layout_gravity="center_horizontal|left" />
 
 </LinearLayout>

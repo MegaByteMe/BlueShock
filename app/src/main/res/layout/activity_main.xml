@@ -21,8 +21,9 @@
         android:text="@string/prog"
         android:id="@+id/prgBtn"
         android:onClick="prgBtnClick"
-        android:layout_above="@+id/dbgKBtn"
-        android:layout_centerHorizontal="true" />
+        android:layout_below="@+id/ychkBox"
+        android:layout_alignStart="@+id/scanBtn"
+        android:layout_marginTop="30dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -47,7 +48,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/dbgkbtn"
+        android:text="@string/devbtn"
         android:id="@+id/dbgKBtn"
         android:onClick="DBGkill"
         android:layout_alignParentBottom="true"
@@ -83,9 +84,9 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/planesel"
         android:id="@+id/textView1"
+        android:layout_marginTop="30dp"
         android:layout_below="@+id/shockBar"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="68dp" />
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:layout_width="wrap_content"
@@ -94,26 +95,6 @@
         android:id="@+id/scanBtn"
         android:onClick="scanBtnClick"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/dbgdets"
-        android:id="@+id/DBGdet"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:onClick="DBGdetClick" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/dbgclear"
-        android:id="@+id/DBGclear"
-        android:onClick="DBGclearClick"
-        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

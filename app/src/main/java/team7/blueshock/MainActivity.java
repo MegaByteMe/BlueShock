@@ -160,10 +160,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean[] chkBoxs() {
-        Log.d("Blue", "chkBoxs: " + String.valueOf(xBox.isChecked()) + " " + String.valueOf(yBox.isChecked()) + " " + String.valueOf(zBox.isChecked()));
-        boolean[] boo = new boolean[]{ xBox.isChecked(), yBox.isChecked(), zBox.isChecked() };
-        Log.d("Blue", "boo: " + String.valueOf(boo[0]) + " " + String.valueOf(boo[1]) + " " + String.valueOf(boo[2]));
-        return ( boo );
+        return ( new boolean[]{ xBox.isChecked(), yBox.isChecked(), zBox.isChecked() } );
     }
 
     private void fixBoxs( boolean[] b) {
@@ -179,20 +176,10 @@ public class MainActivity extends AppCompatActivity {
     // DEBUG ROUTINES - NOT FOR FINAL PRODUCTION
     public void DBGkill( View V ) {
         // TODO Remove for final version
-        System.exit(0);
-    }
-
-    public void DBGdetClick( View V ) {
-        // TODO Remove for final version
-        startActivity(new Intent(this, DetailActivity.class));
-    }
-
-    public void DBGclearClick( View V ) {
-        // TODO Remove for final version
-        PAIR = false;
-        Button b = (Button) findViewById(R.id.prgBtn);
-        b.setEnabled(false);
-        b.refreshDrawableState();
-        Log.d("Blue", "Preferences cleared!");
+        Intent i = new Intent(this, Developer.class);
+        i.putExtra("SVAL", SHKVAL);
+        i.putExtra("AXIS", chkBoxs());
+        startActivity(i);
+        finish();
     }
 }

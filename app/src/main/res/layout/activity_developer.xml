@@ -4,9 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="team7.blueshock.DetailActivity">
+    tools:context="team7.blueshock.Developer">
 
-    <include layout="@layout/content_detail" />
+    <include layout="@layout/content_developer" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

@@ -2,7 +2,7 @@
     <string name="app_name">BlueShock</string>
     <string name="SEND">Program Device</string>
     <string name="shockthreshold">Shock Threshold</string>
-    <string name="dbgkbtn">DBG-Kill</string>
+    <string name="dbgkbtn">Kill</string>
     <string name="xplane">X Plane</string>
     <string name="yplane">Y Plane</string>
     <string name="zplane">Z Plane</string>
@@ -23,4 +23,9 @@
     <string name="sval">Shock Value: </string>
     <string name="dbgdets">DBG-Details</string>
     <string name="dbgclear">DBG-Clear</string>
+    <string name="title_activity_developer">Developer</string>
+    <string name="forevent">Force Shock Event</string>
+    <string name="fdets">Force Details Activity</string>
+    <string name="clrprefs">Clear Preferences</string>
+    <string name="devbtn">Dev Opts</string>
 </resources>
