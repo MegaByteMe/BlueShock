@@ -18,11 +18,12 @@ Pitfalls:
 
 package team7.blueshock;
 
+        import android.app.Fragment;
         import android.bluetooth.BluetoothAdapter;
         import android.bluetooth.BluetoothManager;
+        import android.bluetooth.le.ScanSettings;
         import android.content.Context;
         import android.content.Intent;
-        import android.content.SharedPreferences;
         import android.content.pm.PackageManager;
         import android.os.Build;
         import android.support.annotation.Nullable;
@@ -31,38 +32,49 @@ package team7.blueshock;
         import android.util.Log;
         import android.view.View;
         import android.widget.Button;
+        import android.widget.CheckBox;
         import android.widget.SeekBar;
         import android.widget.TextView;
         import android.widget.Toast;
 
-        import java.util.Map;
-        import java.util.Set;
-
 public class MainActivity extends AppCompatActivity {
-
     // Allows UI emulation and testing in android studio
     // true - disables ble/bt checks
     // false - allows ble/bt checks - used for device testing / production release
-    static boolean DEBUG = true;
+    private static boolean DEBUG = true;
 
-    private TextView barText;                           // gShock threshold value feedback
-    private static String ble_not_supported = "Bluetooth Low Energy capability could not be located";
+    public boolean PAIR = false;
+    public int SHKVAL = 0;
+    public int CHKBOXS = 0;
+
+    private final String ble_not_supported = "Bluetooth Low Energy capability could not be located";
     private static int REQUEST_ENABLE_BT = 1;
+    private TextView barText;
+    private SeekBar sBar;
+    private CheckBox xBox;
+    private CheckBox yBox;
+    private CheckBox zBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final String ble_not_supported = "Bluetooth Low Energy capability could not be located";
         barText = (TextView) findViewById(R.id.threshText);
-        SeekBar sBar = (SeekBar) findViewById(R.id.shockBar); // gShock threshold user input element
+        sBar = (SeekBar) findViewById(R.id.shockBar); // gShock threshold user input element
+        xBox = (CheckBox) findViewById(R.id.xchkBox);
+        yBox = (CheckBox) findViewById(R.id.ychkBox);
+        zBox = (CheckBox) findViewById(R.id.zchkBox);
+
+        // Disable Program Device button since no BLE devices are paired yet
+        findViewById(R.id.prgBtn).setEnabled(false);
 
         // OS Catch - Ensure minimum OS version that supports BLE
         if (Build.VERSION.SDK_INT < 18) {
             // Detect if OS is lower then SDK 18 - first release supporting BLE
             // If so terminate application - BLE does not exist on this platform
             // TODO need graceful application termination and notification dialog
+            Toast.makeText(this, "Android Version Not Supported, Requires Kitkat or higher.", Toast.LENGTH_LONG ).show();
             finish();
         }
 
@@ -70,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
         if(!DEBUG) {
             // Hardware Catch - Determine if hardware has BLE capability
             if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-                Toast.makeText(this, ble_not_supported, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, ble_not_supported, Toast.LENGTH_LONG).show();
                 finish();
             }
 
@@ -86,13 +98,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // Disable Program Device button since no BLE devices are paired yet
-        findViewById(R.id.prgBtn).setEnabled(false);
-
-        SharedPreferences prefs =getSharedPreferences("PAIRED", MODE_APPEND);
-        android.content.SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("PAIRED", false);
-        editor.apply();
+        // Init Checkboxes
+        xBox.setChecked(false);
+        yBox.setChecked(false);
+        zBox.setChecked(false);
 
         // UI Operation - Setup listener for user modifying the seek bar
         sBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -100,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 //Auto Generated Stub
                 barText.setText(Integer.toString(progress));
+                SHKVAL = progress;
             }
 
             @Override
@@ -116,22 +126,19 @@ public class MainActivity extends AppCompatActivity {
 
     protected void onResume() {
         super.onResume();
+        Log.d("Blue", "onResume...");
 
-        Log.d("Blue", "onResume");
+        Bundle xtra = getIntent().getExtras();
 
-        SharedPreferences prefs =getSharedPreferences("PAIRED", MODE_APPEND);
-        android.content.SharedPreferences.Editor editor = prefs.edit();
+        if( getIntent().hasExtra("PAIRED") ) PAIR = xtra.getBoolean("PAIRED");
+        progBtnCntl(PAIR);
 
-        if(prefs.getBoolean("PAIRED", true)) {
-            findViewById(R.id.prgBtn).setEnabled(true);
-            Log.d("Blue", new String(prefs.getAll().toString()) );
+        if(getIntent().hasExtra("SVAL")) {
+            SHKVAL = xtra.getInt("SVAL");
+            sBar.setProgress(xtra.getInt("SVAL"));
         }
-        else if(prefs.getBoolean("PAIRED", false)) {
-            findViewById(R.id.prgBtn).setEnabled(false);
-            Log.d("Blue", new String(prefs.toString()) );
-        }
-        else
-            findViewById(R.id.prgBtn).setEnabled(false);
+
+        if(getIntent().hasExtra("AXIS")) fixBoxs(xtra.getBooleanArray("AXIS"));
     }
 
     public void prgBtnClick( View V) {
@@ -139,24 +146,53 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void scanBtnClick( View V ) {
-        startActivity(new Intent(this, scanActivity.class));
-    }
-
-    public void DBGkill( View V ) {
-        // Implement button to kill the application to assist in app testing
-        // TODO Remove for final code version
+        Intent i = new Intent(this, scanActivity.class);
+        i.putExtra("SVAL", SHKVAL);
+        i.putExtra("AXIS", chkBoxs());
+        startActivity(i);
         finish();
     }
 
+    private void progBtnCntl( boolean e ) {
+        Button btn = (Button) findViewById(R.id.prgBtn);
+        btn.setEnabled(e);
+        btn.refreshDrawableState();
+    }
+
+    private boolean[] chkBoxs() {
+        Log.d("Blue", "chkBoxs: " + String.valueOf(xBox.isChecked()) + " " + String.valueOf(yBox.isChecked()) + " " + String.valueOf(zBox.isChecked()));
+        boolean[] boo = new boolean[]{ xBox.isChecked(), yBox.isChecked(), zBox.isChecked() };
+        Log.d("Blue", "boo: " + String.valueOf(boo[0]) + " " + String.valueOf(boo[1]) + " " + String.valueOf(boo[2]));
+        return ( boo );
+    }
+
+    private void fixBoxs( boolean[] b) {
+        xBox.setChecked(b[0]);
+        yBox.setChecked(b[1]);
+        zBox.setChecked(b[2]);
+        xBox.refreshDrawableState();
+        yBox.refreshDrawableState();
+        zBox.refreshDrawableState();
+        Log.d("Blue", "fixBoxs: " + Boolean.toString(b[0]) + Boolean.toString(b[1]) + Boolean.toString(b[2]));
+    }
+
+    // DEBUG ROUTINES - NOT FOR FINAL PRODUCTION
+    public void DBGkill( View V ) {
+        // TODO Remove for final version
+        System.exit(0);
+    }
+
     public void DBGdetClick( View V ) {
+        // TODO Remove for final version
         startActivity(new Intent(this, DetailActivity.class));
     }
 
     public void DBGclearClick( View V ) {
-        SharedPreferences preferences =getSharedPreferences("PAIRED", MODE_APPEND);
-        android.content.SharedPreferences.Editor editor = preferences.edit();
-        editor.clear();
-        editor.apply();
+        // TODO Remove for final version
+        PAIR = false;
+        Button b = (Button) findViewById(R.id.prgBtn);
+        b.setEnabled(false);
+        b.refreshDrawableState();
         Log.d("Blue", "Preferences cleared!");
     }
 }
