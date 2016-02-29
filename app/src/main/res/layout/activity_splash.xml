@@ -23,8 +23,8 @@ android:layout_height="fill_parent"
         android:layout_gravity="right"
         android:textColor="#040404" />
 
-    <ImageView android:id="@+id/splash" android:layout_width="593dp"
-    android:layout_height="229dp"
+    <ImageView android:id="@+id/splash" android:layout_width="match_parent"
+    android:layout_height="210dp"
     android:src="@drawable/beegees"
         android:contentDescription="@string/splashimage"
         android:layout_gravity="center_horizontal|left" />
