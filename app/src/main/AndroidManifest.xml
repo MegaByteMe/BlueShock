@@ -27,7 +27,7 @@
             android:name=".scanActivity"
             android:label="Scan"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.Base">
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="team7.blueshock.MainActivity" />
@@ -36,7 +36,7 @@
             android:name=".DetailActivity"
             android:label="@string/title_activity_detail"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.Base">
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="team7.blueshock.MainActivity" />
@@ -45,7 +45,7 @@
             android:name=".Developer"
             android:label="@string/title_activity_developer"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.Base">
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="team7.blueshock.MainActivity" />

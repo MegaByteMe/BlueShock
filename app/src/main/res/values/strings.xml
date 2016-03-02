@@ -11,7 +11,7 @@
     <string name="scan">Scan for Device</string>
     <string name="title_activity_splash">SplashActivity</string>
     <string name="cancel">Cancel</string>
-    <string name="select">Select</string>
+    <string name="select">Select Device</string>
     <string name="hello">Hello World, splash</string>
     <string name="splashtext">Low Power Wireless Shock Detection System</string>
     <string name="splashby">by The BLEGEEs</string>
@@ -28,4 +28,6 @@
     <string name="fdets">Force Details Activity</string>
     <string name="clrprefs">Clear Preferences</string>
     <string name="devbtn">Dev Opts</string>
+    <string name="rescan">Rescan</string>
+    <string name="rettxt">Return</string>
 </resources>

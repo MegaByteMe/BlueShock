@@ -18,10 +18,8 @@ Pitfalls:
 
 package team7.blueshock;
 
-        import android.app.Fragment;
         import android.bluetooth.BluetoothAdapter;
         import android.bluetooth.BluetoothManager;
-        import android.bluetooth.le.ScanSettings;
         import android.content.Context;
         import android.content.Intent;
         import android.content.pm.PackageManager;
