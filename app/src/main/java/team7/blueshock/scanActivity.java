@@ -1,6 +1,5 @@
 package team7.blueshock;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
@@ -23,11 +22,8 @@ public class scanActivity extends AppCompatActivity {
 
     private BluetoothAdapter mBLEAdapter;
     private final String ble_not_supported = "Bluetooth Low Energy capability could not be located";
-    private static int REQUEST_ENABLE_BT = 1;
 
     private ListView scanList;
-    //public ArrayAdapter<String> adap;
-    //public ArrayList<String> list = new ArrayList<>();
     public ArrayAdapter<BluetoothDevice> adap;
     public ArrayList<BluetoothDevice> list = new ArrayList<>();
 
@@ -47,7 +43,6 @@ public class scanActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 int itemPosition = position;
-                //String itemValue = (String) scanList.getItemAtPosition(position);
                 String itemValue = scanList.getItemAtPosition(position).toString();
             }
         });
@@ -62,6 +57,7 @@ public class scanActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        /*
         // Init - Bluetooth
         Log.d("Blue", "Start Init");
         // If BLE is not enabled, Request Enable
@@ -76,6 +72,7 @@ public class scanActivity extends AppCompatActivity {
             return;
         }
         Log.d("Blue", "BLE Init Complete.");
+        */
     }
 
     @Override
@@ -93,7 +90,7 @@ public class scanActivity extends AppCompatActivity {
     }
 
     public void cancelBtnClick(View V) {
-        restoreMain(false);
+        restoreMain(false, null);
     }
 
     public void selBtnClick(View V) {
@@ -101,10 +98,20 @@ public class scanActivity extends AppCompatActivity {
         Log.d("Blue", "Select pushed.");
         if(scanList.getCheckedItemPosition() >= 0) {
             int j = scanList.getCheckedItemPosition();
-            String s = new String(((BluetoothDevice) scanList.getItemAtPosition(j)).getName());
-            //String s = new String((BluetoothDevice)(scanList.getItemAtPosition(j)));
+            String s;
+
+            BluetoothDevice bDev = ((BluetoothDevice)(scanList.getItemAtPosition(j)));
+
+            //Guard against device null name
+            if(bDev.getName() != null)
+            s = bDev.getName();
+            else s = "Device is nameless.";
+
             Log.d("Blue", s + " <-- HERE!");
             Toast.makeText(this, "You selected: " + s, Toast.LENGTH_LONG).show();
+
+            //((BluetoothDevice) scanList.getItemAtPosition(j)).createBond();
+            restoreMain(true, bDev);
         }
         else Toast.makeText(this, "Please select a device to connect to!", Toast.LENGTH_LONG).show();
         //restoreMain(true);
@@ -127,12 +134,12 @@ public class scanActivity extends AppCompatActivity {
         Log.d("Blue", "Discovery Complete.");
     }
 
-    public void restoreMain(boolean p) {
+    public void restoreMain(boolean p, BluetoothDevice fDev) {
         Bundle xtra = getIntent().getExtras();
         int val = 0;
         boolean[] b = new boolean[]{ false, false, false };
         Intent i = new Intent(this, MainActivity.class);
-
+        i.putExtra("BLUE", fDev);
         if(xtra.containsKey("SVAL")) val = xtra.getInt("SVAL");
         if(xtra.containsKey("AXIS")) b = xtra.getBooleanArray("AXIS");
         i.putExtra("PAIRED", p);
@@ -141,24 +148,9 @@ public class scanActivity extends AppCompatActivity {
 
         if(mBLEAdapter.isDiscovering()) mBLEAdapter.cancelDiscovery();
 
-        startActivity(i);
+        if(fDev != null) setResult(RESULT_OK, i);
+        else setResult(RESULT_CANCELED);
         finish();
-    }
-
-    public void initBLE() {
-        Log.d("Blue", "Start Init");
-        // Init - Bluetooth
-        // If BLE is not enabled, Request Enable
-        if (mBLEAdapter == null || !mBLEAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        }
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Toast.makeText(this, ble_not_supported, Toast.LENGTH_LONG).show();
-            finish();
-        }
-        final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        Log.d("Blue", "BLE Init Complete.");
     }
 
     private class bleReceiver extends BroadcastReceiver {

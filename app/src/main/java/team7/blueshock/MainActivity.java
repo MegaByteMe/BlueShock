@@ -19,53 +19,43 @@ Pitfalls:
 package team7.blueshock;
 
         import android.bluetooth.BluetoothAdapter;
+        import android.bluetooth.BluetoothDevice;
         import android.bluetooth.BluetoothManager;
         import android.content.Context;
         import android.content.Intent;
         import android.content.pm.PackageManager;
         import android.os.Build;
-        import android.support.annotation.Nullable;
         import android.support.v7.app.AppCompatActivity;
         import android.os.Bundle;
         import android.util.Log;
         import android.view.View;
         import android.widget.Button;
-        import android.widget.CheckBox;
-        import android.widget.SeekBar;
-        import android.widget.TextView;
         import android.widget.Toast;
+        import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     // Allows UI emulation and testing in android studio
     // true - disables ble/bt checks
     // false - allows ble/bt checks - used for device testing / production release
-    private static boolean DEBUG = true;
+    private static boolean DEBUG = false;
 
     public boolean PAIR = false;
     public int SHKVAL = 0;
-    public int CHKBOXS = 0;
 
     private final String ble_not_supported = "Bluetooth Low Energy capability could not be located";
     private static int REQUEST_ENABLE_BT = 1;
-    private TextView barText;
-    private SeekBar sBar;
-    private CheckBox xBox;
-    private CheckBox yBox;
-    private CheckBox zBox;
+    private static int REQUEST_SCAN_BT = 2;
+    private static int REQUEST_CONFIG_BT = 3;
+
+    private BluetoothAdapter mBleAdap;   // <-adjustment
+    private BluetoothManager btManager;
+
+    Button btn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        barText = (TextView) findViewById(R.id.threshText);
-        sBar = (SeekBar) findViewById(R.id.shockBar); // gShock threshold user input element
-        xBox = (CheckBox) findViewById(R.id.xchkBox);
-        yBox = (CheckBox) findViewById(R.id.ychkBox);
-        zBox = (CheckBox) findViewById(R.id.zchkBox);
-
-        // Disable Program Device button since no BLE devices are paired yet
-        findViewById(R.id.prgBtn).setEnabled(false);
 
         // OS Catch - Ensure minimum OS version that supports BLE
         if (Build.VERSION.SDK_INT < 18) {
@@ -74,6 +64,24 @@ public class MainActivity extends AppCompatActivity {
             // TODO need graceful application termination and notification dialog
             Toast.makeText(this, "Android Version Not Supported, Requires Kitkat or higher.", Toast.LENGTH_LONG ).show();
             finish();
+        }
+
+        btn = (Button) findViewById(R.id.setBtn);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("Blue", "onResume...");
+
+        Bundle xtra = getIntent().getExtras();
+
+        if (getIntent().hasExtra("PAIRED")) PAIR = xtra.getBoolean("PAIRED");
+        else PAIR = false;
+        progBtnCntl(PAIR);
+
+        if (getIntent().hasExtra("SVAL")) {
+            SHKVAL = xtra.getInt("SVAL");
         }
 
         //Protect against emulator crashes, checking for hardware that doesnt exist
@@ -86,97 +94,75 @@ public class MainActivity extends AppCompatActivity {
 
             // Init - Bluetooth
             // TODO need better error returns for wrong OS / hardware
-            final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-            BluetoothAdapter myBTAdapter = bluetoothManager.getAdapter();
+            //final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+            btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+            mBleAdap = btManager.getAdapter();
 
             // If BLE is not enabled, Request Enable
-            if (myBTAdapter == null || !myBTAdapter.isEnabled()) {
+            if (mBleAdap == null || !mBleAdap.isEnabled()) {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             }
         }
 
-        // Init Checkboxes
-        xBox.setChecked(false);
-        yBox.setChecked(false);
-        zBox.setChecked(false);
-
-        // UI Operation - Setup listener for user modifying the seek bar
-        sBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                //Auto Generated Stub
-                barText.setText(Integer.toString(progress));
-                SHKVAL = progress;
+        Set<BluetoothDevice> paired = mBleAdap.getBondedDevices();
+        if (paired.size() > 0) {
+            for (BluetoothDevice device : paired) {
+                String BTDevName = device.getName();
+                String BTDevAddr = device.getAddress();
+                Log.d("Blue", BTDevName + " - " + BTDevAddr);
+                }
             }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                //Auto Generated Stub
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                //Auto Generated Stub
-            }
-        });
     }
 
-    protected void onResume() {
-        super.onResume();
-        Log.d("Blue", "onResume...");
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d("Blue", "Entered Result Section");
+        if(requestCode == REQUEST_ENABLE_BT) {
+            if(resultCode == RESULT_OK) {
 
-        Bundle xtra = getIntent().getExtras();
-
-        if( getIntent().hasExtra("PAIRED") ) PAIR = xtra.getBoolean("PAIRED");
-        progBtnCntl(PAIR);
-
-        if(getIntent().hasExtra("SVAL")) {
-            SHKVAL = xtra.getInt("SVAL");
-            sBar.setProgress(xtra.getInt("SVAL"));
+            }
         }
+        else if(requestCode == REQUEST_SCAN_BT) {
+            if(resultCode == RESULT_OK){
+                Log.d("Blue", "scan returned good");
+                BluetoothDevice foundDev = data.getParcelableExtra("BLUE");
+                Log.d("BLUE", "Entered code return");
+                if(foundDev != null) {
+                    Log.d("BLUE", foundDev.getName() + " - " + foundDev.getAddress());
+                }
+            }
+        }
+        else if(requestCode == REQUEST_CONFIG_BT) {
+            if(resultCode == RESULT_OK) {
 
-        if(getIntent().hasExtra("AXIS")) fixBoxs(xtra.getBooleanArray("AXIS"));
-    }
-
-    public void prgBtnClick( View V) {
-        Toast.makeText(this, "you pushed my button " + barText.getText().toString(), Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     public void scanBtnClick( View V ) {
         Intent i = new Intent(this, scanActivity.class);
-        i.putExtra("SVAL", SHKVAL);
-        i.putExtra("AXIS", chkBoxs());
-        startActivity(i);
-        finish();
+        startActivityForResult(i, REQUEST_SCAN_BT);
+    }
+
+    public void conBtnClick( View V ) {
+        Intent i = new Intent(this, ConActivity.class);
+        startActivityForResult(i, REQUEST_CONFIG_BT);
+    }
+
+    public void prgBtnClick( View V ) {
+
     }
 
     private void progBtnCntl( boolean e ) {
-        Button btn = (Button) findViewById(R.id.prgBtn);
         btn.setEnabled(e);
         btn.refreshDrawableState();
-    }
-
-    private boolean[] chkBoxs() {
-        return ( new boolean[]{ xBox.isChecked(), yBox.isChecked(), zBox.isChecked() } );
-    }
-
-    private void fixBoxs( boolean[] b) {
-        xBox.setChecked(b[0]);
-        yBox.setChecked(b[1]);
-        zBox.setChecked(b[2]);
-        xBox.refreshDrawableState();
-        yBox.refreshDrawableState();
-        zBox.refreshDrawableState();
-        Log.d("Blue", "fixBoxs: " + Boolean.toString(b[0]) + Boolean.toString(b[1]) + Boolean.toString(b[2]));
     }
 
     // DEBUG ROUTINES - NOT FOR FINAL PRODUCTION
     public void DBGkill( View V ) {
         // TODO Remove for final version
         Intent i = new Intent(this, Developer.class);
-        i.putExtra("SVAL", SHKVAL);
-        i.putExtra("AXIS", chkBoxs());
         startActivity(i);
         finish();
     }

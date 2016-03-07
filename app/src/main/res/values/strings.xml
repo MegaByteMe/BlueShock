@@ -30,4 +30,7 @@
     <string name="devbtn">Dev Opts</string>
     <string name="rescan">Rescan</string>
     <string name="rettxt">Return</string>
+    <string name="title_activity_config">Settings</string>
+    <string name="configBtn">Setup</string>
+    <string name="setbutton">Set</string>
 </resources>
