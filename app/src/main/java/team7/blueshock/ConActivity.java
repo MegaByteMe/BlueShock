@@ -37,8 +37,6 @@ public class ConActivity extends AppCompatActivity {
         yBox.setChecked(false);
         zBox.setChecked(false);
 
-        xtra = getIntent().getExtras();
-
         // UI Operation - Setup listener for user modifying the seek bar
         sBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -64,9 +62,10 @@ public class ConActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        //Bundle xtra = getIntent().getExtras();
+        Bundle xtra = getIntent().getExtras();
 
         if (getIntent().hasExtra("SVAL")) {
+            Log.d("BLUE", "extra is present");
             SHKVAL = xtra.getInt("SVAL");
             sBar.setProgress(xtra.getInt("SVAL"));
         }
@@ -77,11 +76,11 @@ public class ConActivity extends AppCompatActivity {
     public void setBtnClick( View V) {
         Toast.makeText(this, "you pushed my button " + barText.getText().toString(), Toast.LENGTH_SHORT).show();
         Intent i = new Intent(this, MainActivity.class);
-        if(xtra != null) {
-            i.putExtras(xtra);
-            setResult(RESULT_OK, i);
-        }
-        else setResult(RESULT_CANCELED);
+
+        i.putExtra("AXIS", chkBoxs());
+        i.putExtra("SVAL", SHKVAL);
+        setResult(RESULT_OK, i);
+
         finish();
     }
 

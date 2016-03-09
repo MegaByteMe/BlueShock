@@ -12,8 +12,8 @@
         android:text="@string/prog"
         android:id="@+id/setBtn"
         android:onClick="prgBtnClick"
-        android:layout_centerVertical="true"
-        android:layout_alignEnd="@+id/scanBtn" />
+        android:layout_below="@+id/textView17"
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:layout_width="wrap_content"
@@ -30,17 +30,116 @@
         android:text="@string/scan"
         android:id="@+id/scanBtn"
         android:onClick="scanBtnClick"
-        android:layout_above="@+id/setBtn"
-        android:layout_alignParentEnd="true"
-        android:layout_marginBottom="77dp" />
+        android:layout_below="@+id/textView15"
+        android:layout_alignParentEnd="true" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/configBtn"
         android:id="@+id/conBtn"
+        android:onClick="conBtnClick"
+        android:layout_below="@+id/textView16"
+        android:layout_alignEnd="@+id/scanBtn" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/shksetting"
+        android:id="@+id/textView12"
+        android:layout_above="@+id/textView13"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/axissel"
+        android:id="@+id/textView13"
+        android:layout_alignBottom="@+id/conBtn"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/seldevice"
+        android:id="@+id/textView14"
+        android:layout_alignTop="@+id/scanBtn"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/helpfind"
+        android:id="@+id/textView15"
         android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:onClick="conBtnClick" />
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/helpsetup"
+        android:id="@+id/textView16"
+        android:layout_below="@+id/scanBtn"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="40dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/helplast"
+        android:id="@+id/textView17"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/blank"
+        android:id="@+id/shkSetTxtView"
+        android:layout_above="@+id/textView13"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/xplane"
+        android:id="@+id/axisXTxtView"
+        android:layout_below="@+id/textView13"
+        android:layout_alignStart="@+id/textView13" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/blank"
+        android:id="@+id/devTxtView"
+        android:layout_below="@+id/textView14"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/yplane"
+        android:id="@+id/axisYTxtView"
+        android:layout_below="@+id/textView13"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/zplane"
+        android:id="@+id/axisZTxtView"
+        android:layout_alignTop="@+id/axisYTxtView"
+        android:layout_alignEnd="@+id/conBtn" />
 
 </RelativeLayout>

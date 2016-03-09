@@ -30,25 +30,22 @@ package team7.blueshock;
         import android.util.Log;
         import android.view.View;
         import android.widget.Button;
+        import android.widget.TextView;
         import android.widget.Toast;
         import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
-    // Allows UI emulation and testing in android studio
-    // true - disables ble/bt checks
-    // false - allows ble/bt checks - used for device testing / production release
-    private static boolean DEBUG = false;
-
     public boolean PAIR = false;
     public int SHKVAL = 0;
 
     private final String ble_not_supported = "Bluetooth Low Energy capability could not be located";
-    private static int REQUEST_ENABLE_BT = 1;
-    private static int REQUEST_SCAN_BT = 2;
-    private static int REQUEST_CONFIG_BT = 3;
+
+    private static int REQUEST_ENABLE_BT = 1, REQUEST_SCAN_BT = 2, REQUEST_CONFIG_BT = 3;
 
     private BluetoothAdapter mBleAdap;   // <-adjustment
     private BluetoothManager btManager;
+
+    private TextView shkSetTxtView, devTxtView, axisXTxtView, axisYTxtView, axisZTxtView;
 
     Button btn;
 
@@ -67,6 +64,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         btn = (Button) findViewById(R.id.setBtn);
+        shkSetTxtView = (TextView) findViewById(R.id.shkSetTxtView);
+        devTxtView = (TextView) findViewById(R.id.devTxtView);
+        axisXTxtView = (TextView) findViewById(R.id.axisXTxtView);
+        axisYTxtView = (TextView) findViewById(R.id.axisYTxtView);
+        axisZTxtView = (TextView) findViewById(R.id.axisZTxtView);
+
+        axisXTxtView.setVisibility(View.INVISIBLE);
+        axisYTxtView.setVisibility(View.INVISIBLE);
+        axisZTxtView.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -82,10 +88,19 @@ public class MainActivity extends AppCompatActivity {
 
         if (getIntent().hasExtra("SVAL")) {
             SHKVAL = xtra.getInt("SVAL");
+            shkSetTxtView.setText(Integer.toString(SHKVAL));
+        }
+
+        if(getIntent().hasExtra("AXIS")) {
+            boolean b[] = new boolean[3];
+            b = xtra.getBooleanArray("AXIS");
+            if (b[0]) axisXTxtView.setVisibility(View.VISIBLE);
+            if (b[1]) axisYTxtView.setVisibility(View.VISIBLE);
+            if (b[2]) axisZTxtView.setVisibility(View.VISIBLE);
         }
 
         //Protect against emulator crashes, checking for hardware that doesnt exist
-        if(!DEBUG) {
+        //if(!DEBUG) {
             // Hardware Catch - Determine if hardware has BLE capability
             if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
                 Toast.makeText(this, ble_not_supported, Toast.LENGTH_LONG).show();
@@ -103,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             }
-        }
+        //}
 
         Set<BluetoothDevice> paired = mBleAdap.getBondedDevices();
         if (paired.size() > 0) {
@@ -120,22 +135,28 @@ public class MainActivity extends AppCompatActivity {
         Log.d("Blue", "Entered Result Section");
         if(requestCode == REQUEST_ENABLE_BT) {
             if(resultCode == RESULT_OK) {
-
+                Log.d("BLUE", "REQUEST_ENABLE_BT returned");
             }
         }
         else if(requestCode == REQUEST_SCAN_BT) {
             if(resultCode == RESULT_OK){
                 Log.d("Blue", "scan returned good");
                 BluetoothDevice foundDev = data.getParcelableExtra("BLUE");
+                PAIR = true;
+                progBtnCntl(PAIR);
                 Log.d("BLUE", "Entered code return");
                 if(foundDev != null) {
                     Log.d("BLUE", foundDev.getName() + " - " + foundDev.getAddress());
+                    devTxtView.setText(foundDev.getName());
+                    //foundDev.createBond();
                 }
             }
         }
         else if(requestCode == REQUEST_CONFIG_BT) {
             if(resultCode == RESULT_OK) {
-
+                Log.d("Blue", "REQUEST_CONFIG_BT returned");
+                Bundle xtra = data.getExtras();
+                this.getIntent().putExtras(xtra);
             }
         }
     }

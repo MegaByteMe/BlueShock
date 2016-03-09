@@ -22,6 +22,7 @@ public class scanActivity extends AppCompatActivity {
 
     private BluetoothAdapter mBLEAdapter;
     private final String ble_not_supported = "Bluetooth Low Energy capability could not be located";
+    private int REQUEST_ENABLE_BT = 1;
 
     private ListView scanList;
     public ArrayAdapter<BluetoothDevice> adap;
@@ -57,7 +58,6 @@ public class scanActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        /*
         // Init - Bluetooth
         Log.d("Blue", "Start Init");
         // If BLE is not enabled, Request Enable
@@ -72,7 +72,6 @@ public class scanActivity extends AppCompatActivity {
             return;
         }
         Log.d("Blue", "BLE Init Complete.");
-        */
     }
 
     @Override
@@ -103,18 +102,15 @@ public class scanActivity extends AppCompatActivity {
             BluetoothDevice bDev = ((BluetoothDevice)(scanList.getItemAtPosition(j)));
 
             //Guard against device null name
-            if(bDev.getName() != null)
-            s = bDev.getName();
+            if(bDev.getName() != null) s = bDev.getName();
             else s = "Device is nameless.";
 
             Log.d("Blue", s + " <-- HERE!");
             Toast.makeText(this, "You selected: " + s, Toast.LENGTH_LONG).show();
 
-            //((BluetoothDevice) scanList.getItemAtPosition(j)).createBond();
             restoreMain(true, bDev);
         }
         else Toast.makeText(this, "Please select a device to connect to!", Toast.LENGTH_LONG).show();
-        //restoreMain(true);
     }
 
     public void rescanBtnClick( View V ) {
@@ -136,15 +132,9 @@ public class scanActivity extends AppCompatActivity {
 
     public void restoreMain(boolean p, BluetoothDevice fDev) {
         Bundle xtra = getIntent().getExtras();
-        int val = 0;
-        boolean[] b = new boolean[]{ false, false, false };
         Intent i = new Intent(this, MainActivity.class);
         i.putExtra("BLUE", fDev);
-        if(xtra.containsKey("SVAL")) val = xtra.getInt("SVAL");
-        if(xtra.containsKey("AXIS")) b = xtra.getBooleanArray("AXIS");
         i.putExtra("PAIRED", p);
-        i.putExtra("SVAL", val);
-        i.putExtra("AXIS", b);
 
         if(mBLEAdapter.isDiscovering()) mBLEAdapter.cancelDiscovery();
 

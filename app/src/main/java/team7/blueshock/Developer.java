@@ -2,11 +2,7 @@ package team7.blueshock;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 
@@ -23,7 +19,7 @@ public class Developer extends AppCompatActivity {
         // TODO Remove for final version
         Bundle xtra = getIntent().getExtras();
         Intent i = new Intent(this, DetailActivity.class);
-        i.putExtras(xtra);
+        //i.putExtras(xtra);
         startActivity(i);
         finish();
     }
