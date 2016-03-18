@@ -45,6 +45,7 @@ public class scanActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 int itemPosition = position;
                 String itemValue = scanList.getItemAtPosition(position).toString();
+                //String itemValue = ((BluetoothDevice)scanList.getItemAtPosition(position)).getAddress();
             }
         });
 
@@ -128,6 +129,7 @@ public class scanActivity extends AppCompatActivity {
         IntentFilter ifilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         this.registerReceiver(mRx, ifilter);
         Log.d("Blue", "Discovery Complete.");
+        // TODO : kill this receiver, it is causing memory leaks
     }
 
     public void restoreMain(boolean p, BluetoothDevice fDev) {
@@ -148,10 +150,9 @@ public class scanActivity extends AppCompatActivity {
             String action = intent.getAction();
             if (BluetoothDevice.ACTION_FOUND.equals(action)){
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                //list.add(device.getName() + " - " + device.getAddress());
                 list.add(device);
                 adap.notifyDataSetChanged();
-                Log.d("Blue", "Found: " + device.getName() + " - " + device.getAddress());
+                Log.d("Blue", "Found: " + device.getName() + "@" + device.getAddress());
             }
         }
     }

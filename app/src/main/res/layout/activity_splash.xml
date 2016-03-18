@@ -6,27 +6,10 @@ android:layout_height="fill_parent"
     android:gravity="center"
     android:weightSum="1">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/splashtext"
-        android:id="@+id/textView2"
-        android:layout_gravity="center_horizontal" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/splashby"
-        android:id="@+id/textView3"
-        android:layout_gravity="right"
-        android:textColor="#040404" />
-
-    <ImageView android:id="@+id/splash" android:layout_width="match_parent"
-    android:layout_height="210dp"
-    android:src="@drawable/beegees"
+    <ImageView android:id="@+id/splash" android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:src="@drawable/beep"
         android:contentDescription="@string/splashimage"
-        android:layout_gravity="center_horizontal|left" />
+        android:layout_gravity="center_horizontal" />
 
 </LinearLayout>
