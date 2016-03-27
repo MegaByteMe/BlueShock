@@ -95,7 +95,6 @@ public class scanActivity extends AppCompatActivity {
 
     public void selBtnClick(View V) {
         // TODO setting pairing in this method is undesirable - this is for UI testing only
-        Log.d("Blue", "Select pushed.");
         if(scanList.getCheckedItemPosition() >= 0) {
             int j = scanList.getCheckedItemPosition();
             String s;
