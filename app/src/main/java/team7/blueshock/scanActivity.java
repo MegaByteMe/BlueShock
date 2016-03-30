@@ -21,6 +21,7 @@ import java.util.ArrayList;
 public class scanActivity extends AppCompatActivity {
 
     private BluetoothAdapter mBLEAdapter;
+    private bleReceiver mRx;
     private final String ble_not_supported = "Bluetooth Low Energy capability could not be located";
     private int REQUEST_ENABLE_BT = 1;
 
@@ -87,6 +88,7 @@ public class scanActivity extends AppCompatActivity {
         super.onStop();
         //Tear down open connections
         if (mBLEAdapter.isDiscovering()) mBLEAdapter.cancelDiscovery();
+        unregisterReceiver(mRx);
     }
 
     public void cancelBtnClick(View V) {
@@ -124,7 +126,7 @@ public class scanActivity extends AppCompatActivity {
         if (mBLEAdapter.isDiscovering()) mBLEAdapter.cancelDiscovery();
         mBLEAdapter.startDiscovery();
         Log.d("Blue", "Starting Discovery...");
-        bleReceiver mRx = new bleReceiver();
+        mRx = new bleReceiver();
         IntentFilter ifilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         this.registerReceiver(mRx, ifilter);
         Log.d("Blue", "Discovery Complete.");
