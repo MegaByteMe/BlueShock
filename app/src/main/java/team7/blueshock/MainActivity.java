@@ -19,6 +19,7 @@ Notes:
 
 package team7.blueshock;
 
+        import android.app.AlertDialog;
         import android.app.Service;
         import android.bluetooth.BluetoothAdapter;
         import android.bluetooth.BluetoothClass;
@@ -32,10 +33,12 @@ package team7.blueshock;
         import android.bluetooth.BluetoothProfile;
         import android.content.BroadcastReceiver;
         import android.content.Context;
+        import android.content.DialogInterface;
         import android.content.Intent;
         import android.content.pm.PackageManager;
         import android.os.Build;
         import android.os.IBinder;
+        import android.support.annotation.MainThread;
         import android.support.annotation.Nullable;
         import android.support.v7.app.AppCompatActivity;
         import android.os.Bundle;
@@ -80,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final String ble_not_supported = "Bluetooth Low Energy capability could not be located";
 
-    private static int REQUEST_ENABLE_BT = 1, REQUEST_SCAN_BT = 2, REQUEST_CONFIG_BT = 3;
+    private static int REQUEST_ENABLE_BT = 1, REQUEST_SCAN_BT = 2, REQUEST_CONFIG_BT = 3, REQUEST_DEV = 4;
 
     public boolean PAIR = false;
     public int SHKVAL = 0;
@@ -88,6 +91,9 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothAdapter mBleAdap;
     private BluetoothManager btManager;
     private BluetoothGatt myConnectedGatt;
+    private BLEGattCallback myGattCallb;
+
+    private AlertDialog.Builder alertDialogSEV;
 
     private TextView shkSetTxtView, devTxtView, axisXTxtView, axisYTxtView, axisZTxtView;
 
@@ -117,6 +123,26 @@ public class MainActivity extends AppCompatActivity {
         axisXTxtView.setVisibility(View.INVISIBLE);
         axisYTxtView.setVisibility(View.INVISIBLE);
         axisZTxtView.setVisibility(View.INVISIBLE);
+
+        myGattCallb = new BLEGattCallback();
+
+        alertDialogSEV = new AlertDialog.Builder(this);
+        alertDialogSEV.setTitle("Shock Event!");
+        alertDialogSEV.setMessage("A Shock Event meeting the set threshold has occurred.");
+        alertDialogSEV.setIcon(android.R.drawable.ic_dialog_alert);
+        alertDialogSEV.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+        alertDialogSEV.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        alertDialogSEV.create();
     }
 
     @Override
@@ -218,7 +244,7 @@ public class MainActivity extends AppCompatActivity {
         // TODO:
     }
 
-    private void progBtnCntl(boolean e) {
+    public void progBtnCntl(boolean e) {
         btn.setEnabled(e);
         btn.refreshDrawableState();
     }
@@ -227,8 +253,48 @@ public class MainActivity extends AppCompatActivity {
     public void DBGkill(View V) {
         // TODO Remove for final version
         Intent i = new Intent(this, Developer.class);
-        startActivity(i);
+        startActivityForResult(i, REQUEST_DEV);
         finish();
+    }
+
+    public void notifyOnAlert(Context C) {
+        Log.d("Blue", "notify has been called");
+//        new AlertDialog.Builder(C)
+//                .setTitle("Shock Event!")
+//                .setMessage("Shock Event Threshold has been met.")
+//                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        // do nothing for now
+//                    }
+//                })
+//                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        // do nothing for now
+//                    }
+//                })
+//                .setIcon(android.R.drawable.ic_dialog_alert)
+//                .create()
+//                .show();
+
+//        AlertDialog.Builder alertDialogSEV = new AlertDialog.Builder(C);
+//        alertDialogSEV.setTitle("Shock Event!");
+//        alertDialogSEV.setMessage("A Shock Event meeting the set threshold has occurred.");
+//        alertDialogSEV.setIcon(android.R.drawable.ic_dialog_alert);
+//        alertDialogSEV.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//
+//            }
+//        });
+//        alertDialogSEV.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                dialog.cancel();
+//            }
+//        });
+alertDialogSEV.show();
     }
 
     private class BluetoothLeService extends Service {
@@ -253,7 +319,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private BluetoothGattCallback myGattCallb = new BluetoothGattCallback() {
+    //private BluetoothGattCallback myGattCallb = new BluetoothGattCallback() {
+    private class BLEGattCallback extends BluetoothGattCallback {
             @Override
             public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
                 super.onConnectionStateChange(gatt, status, newState);
@@ -315,15 +382,23 @@ public class MainActivity extends AppCompatActivity {
             public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
                 super.onCharacteristicChanged(gatt, characteristic);
                 Log.d("Blue", "Characteristic changed: " + characteristic.getValue().toString());
+
+                //if(CHAR_UPDATE_NOT_DESC2.compareTo(characteristic.getUuid()) == 0) {
+//do function call
+                    Log.d("Blue", "In characteristic changed, awaiting to notify UI");
+                //getParent().getWindow().getContext();
+                  notifyOnAlert(MainActivity.this);
+
+               //}
             }
 
             @Override
             public void onReliableWriteCompleted(BluetoothGatt gatt, int status) {
                 super.onReliableWriteCompleted(gatt, status);
             }
-        };
+        }
 
-        private final BroadcastReceiver mGattUpdateRx = new BroadcastReceiver() {
+    private final BroadcastReceiver mGattUpdateRx = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 final String action = intent.getAction();
