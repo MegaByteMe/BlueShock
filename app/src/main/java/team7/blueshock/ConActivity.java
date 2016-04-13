@@ -19,12 +19,15 @@ public class ConActivity extends AppCompatActivity {
     private CheckBox zBox;
 
     private  int SHKVAL = 0;
+
     Bundle xtra;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_con);
+
+        xtra = this.getIntent().getExtras();
 
         barText = (TextView) findViewById(R.id.threshText);
         sBar = (SeekBar) findViewById(R.id.shockBar); // gShock threshold user input element
@@ -61,8 +64,6 @@ public class ConActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        Bundle xtra = getIntent().getExtras();
 
         if (getIntent().hasExtra("SVAL")) {
             Log.d("BLUE", "extra is present");

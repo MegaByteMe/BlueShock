@@ -45,9 +45,8 @@ public class Developer extends AppCompatActivity {
     // Open DetailsActivity
     public void button2( View V ) {
         // TODO Remove for final version
-        Bundle xtra = getIntent().getExtras();
         Intent i = new Intent(this, DetailActivity.class);
-        startActivity(i);
+        startActivityForResult(i,0);
         finish();
     }
 
