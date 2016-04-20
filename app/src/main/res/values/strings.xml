@@ -7,8 +7,8 @@
     <string name="yplane">Y Plane</string>
     <string name="zplane">Z Plane</string>
     <string name="planesel">Select any axis you wish to monitor</string>
-    <string name="prog">Program Device</string>
-    <string name="scan">Scan for Device</string>
+    <string name="prog">Program</string>
+    <string name="scan">Scan</string>
     <string name="title_activity_splash">SplashActivity</string>
     <string name="cancel">Cancel</string>
     <string name="select">Select Device</string>
@@ -26,18 +26,16 @@
     <string name="title_activity_developer">Developer</string>
     <string name="forevent">Force Shock Event</string>
     <string name="fdets">Force Details Activity</string>
-    <string name="clrprefs">Clear Preferences</string>
     <string name="devbtn">Dev Opts</string>
     <string name="rescan">Rescan</string>
-    <string name="rettxt">Return</string>
     <string name="title_activity_config">Settings</string>
     <string name="configBtn">Setup</string>
     <string name="setbutton">Set</string>
     <string name="shksetting">Shock Setting:</string>
     <string name="axissel">Axis Selected:</string>
     <string name="seldevice">Selected Device:</string>
-    <string name="helpfind">First, Scan for the device</string>
-    <string name="helpsetup">Second, Configure the device</string>
-    <string name="helplast">Finally, Program the device</string>
+    <string name="helpfind">First, Scan for the Sensor</string>
+    <string name="helpsetup">Second, Configure Sensor options</string>
+    <string name="helplast">Finally, Program the Sensor</string>
     <string name="blank" />
 </resources>

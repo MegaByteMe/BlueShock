@@ -21,7 +21,7 @@ public class DetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
         mCustomDrawableView = new CustomDrawableView(this);
-        //setContentView(mCustomDrawableView);
+        setContentView(mCustomDrawableView);
 
         ShapeDrawable myDrawable;
         int x = 5;

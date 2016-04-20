@@ -46,7 +46,6 @@ public class scanActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 int itemPosition = position;
                 String itemValue = scanList.getItemAtPosition(position).toString();
-                //String itemValue = ((BluetoothDevice)scanList.getItemAtPosition(position)).getAddress();
             }
         });
 
@@ -77,18 +76,17 @@ public class scanActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause(){
-        super.onPause();
-        //Kill open handlers
+    protected void onStop() {
+        super.onStop();
         if (mBLEAdapter.isDiscovering()) mBLEAdapter.cancelDiscovery();
+        //unregisterReceiver(mRx);
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        //Tear down open connections
+    protected void onDestroy() {
+        super.onDestroy();
         if (mBLEAdapter.isDiscovering()) mBLEAdapter.cancelDiscovery();
-        unregisterReceiver(mRx);
+        //unregisterReceiver(mRx);
     }
 
     public void cancelBtnClick(View V) {
@@ -96,7 +94,6 @@ public class scanActivity extends AppCompatActivity {
     }
 
     public void selBtnClick(View V) {
-        // TODO setting pairing in this method is undesirable - this is for UI testing only
         if(scanList.getCheckedItemPosition() >= 0) {
             int j = scanList.getCheckedItemPosition();
             String s;
@@ -107,9 +104,6 @@ public class scanActivity extends AppCompatActivity {
             if(bDev.getName() != null) s = bDev.getName();
             else s = "Device is nameless.";
 
-            Log.d("Blue", s + " <-- HERE!");
-            Toast.makeText(this, "You selected: " + s, Toast.LENGTH_LONG).show();
-
             restoreMain(true, bDev);
         }
         else Toast.makeText(this, "Please select a device to connect to!", Toast.LENGTH_LONG).show();
@@ -119,6 +113,7 @@ public class scanActivity extends AppCompatActivity {
         list.clear();
         adap.clear();
         adap.notifyDataSetChanged();
+        scanList.invalidate();
         scanBLE();
     }
 
@@ -130,7 +125,6 @@ public class scanActivity extends AppCompatActivity {
         IntentFilter ifilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         this.registerReceiver(mRx, ifilter);
         Log.d("Blue", "Discovery Complete.");
-        // TODO : kill this receiver, it is causing memory leaks
     }
 
     public void restoreMain(boolean p, BluetoothDevice fDev) {
@@ -140,6 +134,7 @@ public class scanActivity extends AppCompatActivity {
         i.putExtra("PAIRED", p);
 
         if(mBLEAdapter.isDiscovering()) mBLEAdapter.cancelDiscovery();
+        unregisterReceiver(mRx);
 
         if(fDev != null) setResult(RESULT_OK, i);
         else setResult(RESULT_CANCELED);
