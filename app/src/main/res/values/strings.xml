@@ -35,7 +35,8 @@
     <string name="axissel">Axis Selected:</string>
     <string name="seldevice">Selected Device:</string>
     <string name="helpfind">First, Scan for the Sensor</string>
-    <string name="helpsetup">Second, Configure Sensor options</string>
+    <string name="helpsetup">Second, Configure the Sensor</string>
     <string name="helplast">Finally, Program the Sensor</string>
     <string name="blank" />
+    <string name="lastconn">Last Paired Device:</string>
 </resources>

@@ -12,8 +12,8 @@
         android:text="@string/prog"
         android:id="@+id/setBtn"
         android:onClick="prgBtnClick"
-        android:layout_below="@+id/textView17"
-        android:layout_centerHorizontal="true" />
+        android:layout_alignParentBottom="true"
+        android:layout_toEndOf="@+id/textView14" />
 
     <Button
         android:layout_width="wrap_content"
@@ -75,9 +75,8 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/helpsetup"
         android:id="@+id/textView16"
-        android:layout_below="@+id/scanBtn"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="40dp" />
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -85,9 +84,8 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/helplast"
         android:id="@+id/textView17"
-        android:layout_below="@+id/axisXTxtView"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="56dp" />
+        android:layout_above="@+id/setBtn"
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -133,5 +131,35 @@
         android:id="@+id/axisZTxtView"
         android:layout_alignTop="@+id/axisYTxtView"
         android:layout_alignEnd="@+id/conBtn" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/lastconn"
+        android:id="@+id/textView18"
+        android:layout_below="@+id/scanBtn"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="40dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Medium Text"
+        android:id="@+id/textViewCombo"
+        android:onClick="comboBtnClick"
+        android:layout_below="@+id/textView18"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="New Button"
+        android:id="@+id/button"
+        android:layout_above="@+id/textView17"
+        android:layout_alignParentEnd="true"
+        android:onClick="pushme" />
 
 </RelativeLayout>

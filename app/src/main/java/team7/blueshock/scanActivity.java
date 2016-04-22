@@ -2,12 +2,15 @@ package team7.blueshock;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.ParcelUuid;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -17,6 +20,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class scanActivity extends AppCompatActivity {
 
@@ -26,8 +30,12 @@ public class scanActivity extends AppCompatActivity {
     private int REQUEST_ENABLE_BT = 1;
 
     private ListView scanList;
-    public ArrayAdapter<BluetoothDevice> adap;
-    public ArrayList<BluetoothDevice> list = new ArrayList<>();
+    //public ArrayAdapter<BluetoothDevice> adap;
+    //public ArrayList<BluetoothDevice> list = new ArrayList<>();
+
+    public ArrayList<BluetoothDevice> bles = new ArrayList<>();
+    public ArrayAdapter<String> adap;
+    public ArrayList<String> list = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +43,7 @@ public class scanActivity extends AppCompatActivity {
         setContentView(R.layout.activity_scan);
 
         //Rescan has some duplication bugs - feature may not be need disabling for now
-        findViewById(R.id.rescanBtn).setEnabled(false);
+        findViewById(R.id.rescanBtn).setEnabled(true);
 
         scanList = (ListView) findViewById(R.id.scanView);
         adap = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, list);
@@ -79,14 +87,13 @@ public class scanActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         if (mBLEAdapter.isDiscovering()) mBLEAdapter.cancelDiscovery();
-        //unregisterReceiver(mRx);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         if (mBLEAdapter.isDiscovering()) mBLEAdapter.cancelDiscovery();
-        //unregisterReceiver(mRx);
+        unregisterReceiver(mRx);
     }
 
     public void cancelBtnClick(View V) {
@@ -98,7 +105,8 @@ public class scanActivity extends AppCompatActivity {
             int j = scanList.getCheckedItemPosition();
             String s;
 
-            BluetoothDevice bDev = ((BluetoothDevice)(scanList.getItemAtPosition(j)));
+            //BluetoothDevice bDev = ((BluetoothDevice)(scanList.getItemAtPosition(j)));
+            BluetoothDevice bDev = bles.get(j);
 
             //Guard against device null name
             if(bDev.getName() != null) s = bDev.getName();
@@ -113,7 +121,8 @@ public class scanActivity extends AppCompatActivity {
         list.clear();
         adap.clear();
         adap.notifyDataSetChanged();
-        scanList.invalidate();
+        scanList.clearChoices();
+        unregisterReceiver(mRx);
         scanBLE();
     }
 
@@ -131,10 +140,9 @@ public class scanActivity extends AppCompatActivity {
         Bundle xtra = getIntent().getExtras();
         Intent i = new Intent(this, MainActivity.class);
         i.putExtra("BLUE", fDev);
-        i.putExtra("PAIRED", p);
+        i.putExtra("PAIRED", true);
 
         if(mBLEAdapter.isDiscovering()) mBLEAdapter.cancelDiscovery();
-        unregisterReceiver(mRx);
 
         if(fDev != null) setResult(RESULT_OK, i);
         else setResult(RESULT_CANCELED);
@@ -146,7 +154,8 @@ public class scanActivity extends AppCompatActivity {
             String action = intent.getAction();
             if (BluetoothDevice.ACTION_FOUND.equals(action)){
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                list.add(device);
+                list.add(device.getName());
+                bles.add(device);
                 adap.notifyDataSetChanged();
                 Log.d("Blue", "Found: " + device.getName() + "@" + device.getAddress());
             }
