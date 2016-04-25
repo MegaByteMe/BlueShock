@@ -1,26 +1,35 @@
+/*
+Low Power Wireless Shock Detection System
+Developed by Team7
+
+Codename: BlueShock
+Revision:1
+Change:1
+
+Notes:
+
+*/
+
 package team7.blueshock;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.os.ParcelUuid;
-import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.util.Log;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 import java.util.ArrayList;
-import java.util.UUID;
 
 public class scanActivity extends AppCompatActivity {
 
@@ -28,10 +37,9 @@ public class scanActivity extends AppCompatActivity {
     private bleReceiver mRx;
     private final String ble_not_supported = "Bluetooth Low Energy capability could not be located";
     private int REQUEST_ENABLE_BT = 1;
+    private String TAG = "SCANNER";
 
     private ListView scanList;
-    //public ArrayAdapter<BluetoothDevice> adap;
-    //public ArrayList<BluetoothDevice> list = new ArrayList<>();
 
     public ArrayList<BluetoothDevice> bles = new ArrayList<>();
     public ArrayAdapter<String> adap;
@@ -42,8 +50,8 @@ public class scanActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scan);
 
-        //Rescan has some duplication bugs - feature may not be need disabling for now
-        findViewById(R.id.rescanBtn).setEnabled(true);
+        final Button btn = (Button) findViewById(R.id.selBtn);
+        btn.setEnabled(false);
 
         scanList = (ListView) findViewById(R.id.scanView);
         adap = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, list);
@@ -54,6 +62,8 @@ public class scanActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 int itemPosition = position;
                 String itemValue = scanList.getItemAtPosition(position).toString();
+                btn.setEnabled(true);
+
             }
         });
 
@@ -68,7 +78,7 @@ public class scanActivity extends AppCompatActivity {
         super.onResume();
 
         // Init - Bluetooth
-        Log.d("Blue", "Start Init");
+        Log.d(TAG, "Start Init");
         // If BLE is not enabled, Request Enable
         if (mBLEAdapter == null || !mBLEAdapter.isEnabled()) {
             Intent enableBleI = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -80,7 +90,7 @@ public class scanActivity extends AppCompatActivity {
             finish();
             return;
         }
-        Log.d("Blue", "BLE Init Complete.");
+        Log.d(TAG, "BLE Init Complete.");
     }
 
     @Override
@@ -103,15 +113,7 @@ public class scanActivity extends AppCompatActivity {
     public void selBtnClick(View V) {
         if(scanList.getCheckedItemPosition() >= 0) {
             int j = scanList.getCheckedItemPosition();
-            String s;
-
-            //BluetoothDevice bDev = ((BluetoothDevice)(scanList.getItemAtPosition(j)));
             BluetoothDevice bDev = bles.get(j);
-
-            //Guard against device null name
-            if(bDev.getName() != null) s = bDev.getName();
-            else s = "Device is nameless.";
-
             restoreMain(true, bDev);
         }
         else Toast.makeText(this, "Please select a device to connect to!", Toast.LENGTH_LONG).show();
@@ -129,18 +131,20 @@ public class scanActivity extends AppCompatActivity {
     public void scanBLE() {
         if (mBLEAdapter.isDiscovering()) mBLEAdapter.cancelDiscovery();
         mBLEAdapter.startDiscovery();
-        Log.d("Blue", "Starting Discovery...");
+        Log.d("SCANNER", "Starting Discovery...");
         mRx = new bleReceiver();
         IntentFilter ifilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         this.registerReceiver(mRx, ifilter);
-        Log.d("Blue", "Discovery Complete.");
     }
 
     public void restoreMain(boolean p, BluetoothDevice fDev) {
         Bundle xtra = getIntent().getExtras();
+        BlueShockConfig config = xtra.getParcelable("CONFIG");
+        config.setPAIRED(true);
+
         Intent i = new Intent(this, MainActivity.class);
         i.putExtra("BLUE", fDev);
-        i.putExtra("PAIRED", true);
+        i.putExtra("CONFIG", config);
 
         if(mBLEAdapter.isDiscovering()) mBLEAdapter.cancelDiscovery();
 
@@ -157,7 +161,7 @@ public class scanActivity extends AppCompatActivity {
                 list.add(device.getName());
                 bles.add(device);
                 adap.notifyDataSetChanged();
-                Log.d("Blue", "Found: " + device.getName() + "@" + device.getAddress());
+                Log.d("SCANNER", "Found: " + device.getName() + "@" + device.getAddress());
             }
         }
     }

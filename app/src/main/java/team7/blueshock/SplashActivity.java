@@ -1,3 +1,15 @@
+/*
+Low Power Wireless Shock Detection System
+Developed by Team7
+
+Codename: BlueShock
+Revision:1
+Change:1
+
+Notes:
+
+*/
+
 package team7.blueshock;
 
 import android.app.Activity;

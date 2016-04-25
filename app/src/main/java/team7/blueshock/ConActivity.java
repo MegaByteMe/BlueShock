@@ -1,3 +1,15 @@
+/*
+Low Power Wireless Shock Detection System
+Developed by Team7
+
+Codename: BlueShock
+Revision:2
+Change:1
+
+Notes:
+
+*/
+
 package team7.blueshock;
 
 import android.content.Intent;
@@ -7,6 +19,7 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class ConActivity extends AppCompatActivity {
 
@@ -16,9 +29,7 @@ public class ConActivity extends AppCompatActivity {
     private CheckBox yBox;
     private CheckBox zBox;
 
-    private  int SHKVAL = 0;
-
-    Bundle xtra;
+    private BlueShockConfig config;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,13 +47,22 @@ public class ConActivity extends AppCompatActivity {
         yBox.setChecked(false);
         zBox.setChecked(false);
 
+        if(getIntent().hasExtra("CONFIG")) {
+            config = getIntent().getParcelableExtra("CONFIG");
+        }
+        else config = new BlueShockConfig();
+
+        sBar.setProgress(config.getShockThreshold());
+        barText.setText(Integer.toString(config.getShockThreshold()));
+        fixBoxs(new boolean[]{ config.isxBoxSet(), config.isyBoxSet(), config.iszBoxSet() });
+
         // UI Operation - Setup listener for user modifying the seek bar
         sBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 //Auto Generated Stub
                 barText.setText(Integer.toString(progress));
-                SHKVAL = progress;
+                config.setShockThreshold(progress);
             }
 
             @Override
@@ -55,39 +75,27 @@ public class ConActivity extends AppCompatActivity {
                 //Auto Generated Stub
             }
         });
-
-
-        xtra = getIntent().getExtras();
-
-        if (getIntent().hasExtra("SVAL")) {
-            SHKVAL = xtra.getInt("SVAL");
-            sBar.setProgress(xtra.getInt("SVAL"));
-        }
-        if (getIntent().hasExtra("AXIS")) fixBoxs(xtra.getBooleanArray("AXIS"));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-        if (getIntent().hasExtra("SVAL")) {
-            SHKVAL = xtra.getInt("SVAL");
-            sBar.setProgress(xtra.getInt("SVAL"));
-        }
-        if (getIntent().hasExtra("AXIS")) fixBoxs(xtra.getBooleanArray("AXIS"));
     }
 
     public void setBtnClick( View V) {
-        Intent i = new Intent(this, MainActivity.class);
-        i.putExtra("AXIS", chkBoxs());
-        i.putExtra("SVAL", SHKVAL);
-        i.putExtra("SETUP", true);
-        setResult(RESULT_OK, i);
-        finish();
-    }
+        if(sBar.getProgress() > 0 && (xBox.isChecked() | yBox.isChecked() | zBox.isChecked()) ) {
 
-    private boolean[] chkBoxs() {
-        return ( new boolean[]{ xBox.isChecked(), yBox.isChecked(), zBox.isChecked() } );
+            config.setxBoxSet(xBox.isChecked());
+            config.setyBoxSet(yBox.isChecked());
+            config.setzBoxSet(zBox.isChecked());
+            config.setSETUP(true);
+
+            Intent i = new Intent(this, MainActivity.class);
+            i.putExtra("CONFIG", config);
+            setResult(RESULT_OK, i);
+            finish();
+        }
+        else Toast.makeText(this, "Please select configuration values", Toast.LENGTH_LONG).show();
     }
 
     private void fixBoxs( boolean[] b) {

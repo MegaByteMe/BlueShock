@@ -39,4 +39,8 @@
     <string name="helplast">Finally, Program the Sensor</string>
     <string name="blank" />
     <string name="lastconn">Last Paired Device:</string>
+    <string name="eventid">Shock Event ID:</string>
+    <string name="datey">Date and Time:</string>
+    <string name="timey">TIme:</string>
+    <string name="pi">pi</string>
 </resources>
