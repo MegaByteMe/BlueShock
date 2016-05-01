@@ -111,10 +111,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        final int bad_data_marker = 0xDEAD;
+
         for(int i = 0; i < 33; i++) {
-            xData[i] = 0xFFFF;
-            yData[i] = 0xFFFF;
-            zData[i] = 0xFFFF;
+            xData[i] = bad_data_marker;
+            yData[i] = bad_data_marker;
+            zData[i] = bad_data_marker;
         }
 
         // OS Catch - Ensure minimum OS version that supports BLE
