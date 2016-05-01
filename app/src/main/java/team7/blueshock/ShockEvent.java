@@ -18,7 +18,7 @@ import android.os.Parcelable;
 public class ShockEvent implements Parcelable{
     private final int id, sThreshold, axisBox;
     private final String dateTime;
-    private int[] xData, yData, zData;
+    private float[] xData, yData, zData;
 
     public int getId() {
         return id;
@@ -26,17 +26,29 @@ public class ShockEvent implements Parcelable{
 
     public int getsThreshold() { return sThreshold; }
 
-    public int[] getxData() { return xData; }
+    public float[] getxData() { return xData; }
 
-    public int[] getyData() { return yData; }
+    public float[] getyData() { return yData; }
 
-    public int[] getzData() { return zData; }
+    public float[] getzData() { return zData; }
 
-    public void setxData(int[] xData) { this.xData = xData; }
+    public void setxData(float[] xData) { this.xData = xData; }
 
-    public void setyData(int[] yData) { this.yData = yData; }
+    public void setxData(int[] xData) {
+        for(int i = 0; i < xData.length; i++) this.xData[i] = xData[i];
+    }
 
-    public void setzData(int[] zData) { this.zData = zData; }
+    public void setyData(float[] yData) { this.yData = yData; }
+
+    public void setyData(int[] yData) {
+        for(int i = 0; i < yData.length; i++) this.yData[i] = yData[i];
+    }
+
+    public void setzData(float[] zData) { this.zData = zData; }
+
+    public void setzData(int[] zData) {
+        for(int i = 0; i < zData.length; i++) this.zData[i] = zData[i];
+    }
 
     public String getDateTime() { return dateTime; }
 
@@ -54,7 +66,7 @@ public class ShockEvent implements Parcelable{
         this.axisBox = shockEvent.getAxisBox();
     }
 
-    public int[] pullData() {
+    public float[] pullData() {
         //TODO finish handling multiple planes
         switch(axisBox) {
             case 7:
@@ -79,19 +91,19 @@ public class ShockEvent implements Parcelable{
                 // Z plane selected
                 return zData;
         }
-        return new int[]{0};
+        return new float[]{0};
     }
 
     public int getAxisBox() { return axisBox; }
 
-    protected ShockEvent(Parcel parcel) {
+    private ShockEvent(Parcel parcel) {
         id = parcel.readInt();
         sThreshold = parcel.readInt();
         axisBox = parcel.readInt();
         dateTime = parcel.readString();
-        xData = parcel.createIntArray();
-        yData = parcel.createIntArray();
-        zData = parcel.createIntArray();
+        xData = parcel.createFloatArray();
+        yData = parcel.createFloatArray();
+        zData = parcel.createFloatArray();
     }
 
     @Override
@@ -105,9 +117,9 @@ public class ShockEvent implements Parcelable{
         dest.writeInt(sThreshold);
         dest.writeInt(axisBox);
         dest.writeString(dateTime);
-        dest.writeIntArray(xData);
-        dest.writeIntArray(yData);
-        dest.writeIntArray(zData);
+        dest.writeFloatArray(xData);
+        dest.writeFloatArray(yData);
+        dest.writeFloatArray(zData);
     }
 
     public static final Parcelable.Creator<ShockEvent> CREATOR = new Parcelable.Creator<ShockEvent>() {

@@ -13,15 +13,18 @@ Notes:
     DATA: 0xF6C2
 
     Current Extras in use:
-        CONFIG
-        BLUE - Bluetoothdevice returned from scan activity
-        EVENT
+        CONFIG          bsconfig object passed containing ui values
+        BLUE            Bluetoothdevice returned from scan activity
+        EVENT           shockevent object passed for display in detail
+        DATA            Temporary until object array parceling is fixed
 
     team7.blueshock.ui
         TXCHAIN         Indicates the beginning of the shock event data transmission
         ALERT           Indicates shock event occurred
         EVENTRDY        Indicates shock event data has completed transmission and is ready to view
         HOLD            Indicates pending connection to sensor device and holds user until connection complete
+        PROG            Indicates programming complete
+        CONSTATE        Indicates connection state
 */
 
 package team7.blueshock;
@@ -48,18 +51,16 @@ package team7.blueshock;
         import android.support.v4.content.LocalBroadcastManager;
         import android.support.v7.app.AppCompatActivity;
         import android.os.Bundle;
-        import android.text.style.TtsSpan;
         import android.util.Log;
         import android.view.View;
         import android.widget.Button;
         import android.widget.TextView;
         import android.widget.Toast;
-
         import java.text.SimpleDateFormat;
         import java.util.Date;
         import java.util.LinkedList;
+        import java.util.Locale;
         import java.util.Queue;
-        import java.util.Random;
         import java.util.TimeZone;
         import java.util.UUID;
 
@@ -86,31 +87,35 @@ public class MainActivity extends AppCompatActivity {
     private static final UUID CHAR_UPDATE_NOT_DESC = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     private static final String ble_not_supported = "Bluetooth Low Energy capability could not be located";
-    private static int REQUEST_ENABLE_BT = 1, REQUEST_SCAN_BT = 2, REQUEST_CONFIG_BT = 3, REQUEST_DETAIL_BT = 4;
+    private static final int REQUEST_ENABLE_BT = 1, REQUEST_SCAN_BT = 2, REQUEST_CONFIG_BT = 3, REQUEST_DETAIL_BT = 4;
+    private static final int CON_UNKWN = 0, CON_COND = 1, CON_DCOND = 2;
     private final int xSet = 0b00000100, ySet = 0b00000010, zSet = 0b00000001;
 
-    public boolean LOAD = true;
-    public static int txTotal = 0;
-    public int[] xData = new int[33];
-    public int[] yData = new int[33];
-    public int[] zData = new int[33];
+    private boolean LOAD = true, SINGLETX = false, TXCOMP = false;
+    private static int txTotal = 0;
+    private float[] xData = new float[33];
+    private float[] yData = new float[33];
+    private float[] zData = new float[33];
 
-    private BluetoothAdapter mBleAdap;
-    private BluetoothManager btManager;
     private BluetoothGatt myConnectedGatt;
 
     private TextView shkSetTxtView, devTxtView, axisXTxtView, axisYTxtView, axisZTxtView, comboTextBtn;
     private ProgressDialog progress;
     private Button btn;
 
-    private BroadcastReceiver uiCommRx;
-    private Arbiter arby = new Arbiter();
+    private final Arbiter arby = new Arbiter();
     private BlueShockConfig bsConfig = new BlueShockConfig();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        for(int i = 0; i < 33; i++) {
+            xData[i] = 0xFFFF;
+            yData[i] = 0xFFFF;
+            zData[i] = 0xFFFF;
+        }
 
         // OS Catch - Ensure minimum OS version that supports BLE
         if (Build.VERSION.SDK_INT < 18) {
@@ -121,35 +126,42 @@ public class MainActivity extends AppCompatActivity {
             finish();
         }
 
+        final int colorSnapUI = Color.MAGENTA;
+
         btn = (Button) findViewById(R.id.setBtn);
+
+        // UI Text element indicating user set shock threshold
         shkSetTxtView = (TextView) findViewById(R.id.shkSetTxtView);
+        assert shkSetTxtView != null;
+        shkSetTxtView.setTextColor(colorSnapUI);
+
+        // UI Text element indicating connected ble device
         devTxtView = (TextView) findViewById(R.id.devTxtView);
+        assert devTxtView != null;
+        devTxtView.setTextColor(colorSnapUI);
+
+        // UI Text elements indicating user axis selected
         axisXTxtView = (TextView) findViewById(R.id.axisXTxtView);
         axisYTxtView = (TextView) findViewById(R.id.axisYTxtView);
         axisZTxtView = (TextView) findViewById(R.id.axisZTxtView);
-
-        final int colorSnapUI = Color.MAGENTA;
-
-        devTxtView.setTextColor(colorSnapUI);
         axisXTxtView.setTextColor(colorSnapUI);
         axisYTxtView.setTextColor(colorSnapUI);
         axisZTxtView.setTextColor(colorSnapUI);
-        shkSetTxtView.setTextColor(colorSnapUI);
-
         axisXTxtView.setVisibility(View.INVISIBLE);
         axisYTxtView.setVisibility(View.INVISIBLE);
         axisZTxtView.setVisibility(View.INVISIBLE);
 
+        // UI Text element indicating last paired ble device
+        // TODO: element is treated as a button - implement reconnect on push
         comboTextBtn = (TextView) findViewById(R.id.textViewCombo);
 
-        uiCommRx = createBroadcastReceiver();
+        BroadcastReceiver uiCommRx = createBroadcastReceiver();
         LocalBroadcastManager.getInstance(this).registerReceiver(uiCommRx, new IntentFilter("team7.blueshock.ui"));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d("Blue", "onResume...");
 
         restore_settings();
         progBtnCntl();
@@ -162,8 +174,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Init - Bluetooth
         // TODO need better error returns for wrong OS / hardware
-        btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        mBleAdap = btManager.getAdapter();
+        BluetoothManager btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        BluetoothAdapter mBleAdap = btManager.getAdapter();
 
         // If BLE is not enabled, Request Enable
         if (mBleAdap == null || !mBleAdap.isEnabled()) {
@@ -171,28 +183,14 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
 
-        if(myConnectedGatt != null ) devTxtView.setText(myConnectedGatt.getDevice().getName());
-
-        if(mBleAdap.getBondedDevices().size() > 0) {
+        if(mBleAdap != null && mBleAdap.getBondedDevices().size() > 0) {
             comboTextBtn.setVisibility(View.VISIBLE);
             int si = mBleAdap.getBondedDevices().size();
             Object[] oldBonds = mBleAdap.getBondedDevices().toArray();
-            comboTextBtn.setText(oldBonds[si - 1].toString());
+            comboTextBtn.setText(((BluetoothDevice)oldBonds[si - 1]).getName());
             comboTextBtn.setTextColor(Color.BLUE);
         }
         else comboTextBtn.setVisibility(View.INVISIBLE);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d("Blue", "onPause occurred");
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.d("Blue", "onStop occurred");
     }
 
     @Override
@@ -216,9 +214,8 @@ public class MainActivity extends AppCompatActivity {
 
                 if (foundDev != null) {
                     Log.d("Blue", foundDev.getName() + " - " + foundDev.getAddress());
-                    devTxtView.setText(foundDev.getName());
                     myConnectedGatt = foundDev.connectGatt(this, true, myGattCallb);
-                    //foundDev.createBond();
+                    foundDev.createBond();
 
                     Intent i = new Intent("team7.blueshock.ui");
                     i.putExtra("HOLD", true);
@@ -252,38 +249,57 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onReceive(Context context, Intent intent) {
-                if(intent.getBooleanExtra("ALERT", false) == true) {
+                if(intent.getBooleanExtra("ALERT", false)) {
                     notifyOnAlert();
                 }
-                else if(intent.getBooleanExtra("HOLD", false) == true) {
+                else if(intent.getBooleanExtra("HOLD", false)) {
                     onConnectHold();
                 }
-                else if(intent.getBooleanExtra("TXCHAIN", false) == true) {
-                    if(txTotal > 0) {
+                else if(intent.getBooleanExtra("TXCHAIN", false)) {
+                    if(txTotal > 0 && !SINGLETX) {
                         txTotal--;
 
-                        if(LOAD) onLoadHold();
+                        if (LOAD) onLoadHold();
                         LOAD = false;
 
-                        progress.incrementProgressBy(1);
+                        progress.incrementProgressBy(1);    // Increment loading dialog
 
                         arby.writeChar_N(DATA_TXTOTAL, txTotal);
                     }
+                    else if(txTotal > 0 && SINGLETX) {
+                        arby.writeChar_N(DATA_TXTOTAL, txTotal);
+                    }
                     else if(txTotal == 0) {
+                        LOAD = true;                    // Reset loading flag
+                        SINGLETX = false;
 
-                        progress.dismiss();
-                        LOAD = true;
+                        if(!TXCOMP) arby.writeChar_N(DATA_TXTOTAL, txTotal);
+                        else {
+                            // TODO: REMOVE - FOR DEBUGGING ONLY
+                            //for(int x = 0; x < xData.length; x++) Log.d(TAG, "----> " + xData[x]);
 
-                        for(int x : xData) Log.d("TXCHAIN FINALE -----", "<----> " + x);
+                            for (float f : xData) Log.d(TAG, "----> " + f);
 
-                        Intent i = new Intent("team7.blueshock.ui");
-                        i.putExtra("EVENTRDY", true);
-                        LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(i);
+                            Intent i = new Intent("team7.blueshock.ui");
+                            i.putExtra("EVENTRDY", true);
+                            LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(i);
+                        }
+                        TXCOMP = true;                  // Reset transmission complete flag
                     }
                     else Log.d(TAG, "ERROR ON TXCHAIN PROCESS");
                 }
-                else if(intent.getBooleanExtra("EVENTRDY", false) == true) {
+                else if(intent.getBooleanExtra("EVENTRDY", false)) {
+                    progress.dismiss();         // Dismiss loading message
                     notifyOnView();
+                }
+                else if(intent.getBooleanExtra("PROG", false)) {
+                    notifyOnProg();
+                }
+                else if(intent.getIntExtra("CONSTATE", 0) == CON_COND) {
+                    notifyOnConnectionChange(CON_COND);
+                }
+                else if(intent.getIntExtra("CONSTATE", 0) == CON_DCOND) {
+                    notifyOnConnectionChange(CON_DCOND);
                 }
             }
         };
@@ -313,18 +329,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void prgBtnClick(View V) {
-        int shock_val = Integer.parseInt(shkSetTxtView.getText().toString());
         int axis_val = 0;
 
-        if(axisXTxtView.getVisibility() == View.VISIBLE) axis_val |= 0b00000100;
-        if(axisYTxtView.getVisibility() == View.VISIBLE) axis_val |= 0b00000010;
-        if(axisZTxtView.getVisibility() == View.VISIBLE) axis_val |= 0b00000001;
+        if(bsConfig.isxBoxSet()) axis_val |= 0b00000100;
+        if(bsConfig.isyBoxSet()) axis_val |= 0b00000010;
+        if(bsConfig.iszBoxSet()) axis_val |= 0b00000001;
 
-        arby.writeChar_N(CONFIG_THRESH, shock_val);
+        bsConfig.setAxisBox(axis_val);
+
+        arby.writeChar_N(CONFIG_THRESH, bsConfig.getShockThreshold());
         arby.writeChar_N(CONFIG_AXIS, axis_val);
+
     }
 
-    public void progBtnCntl() {
+    private void progBtnCntl() {
         btn.setEnabled(bsConfig.isPAIRED() & bsConfig.isSETUP());
         btn.refreshDrawableState();
     }
@@ -332,32 +350,34 @@ public class MainActivity extends AppCompatActivity {
     public void comboBtnClick(View V) {
         // TODO: finish this section. Preliminary research indicates have to go through scanning process
         // and find Bluetooth device. This may be lessened since address is already stored in paired set.
-        Toast.makeText(this, "Oh trying to connect are we?", Toast.LENGTH_LONG).show();
+        // Toast.makeText(this, "Oh trying to connect are we?", Toast.LENGTH_LONG).show();
 //        comboTextBtn.getText();
 //        UUID[] ugly = new UUID[1];
 //        ugly[0] = ALERT_SERV;
     }
 
-    public void onLoadHold() {
+    private void onLoadHold() {
         progress = new ProgressDialog(this);
         progress.setMessage("Receiving Data from the sensor");
         progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progress.setIndeterminate(false);
         progress.setProgress(0);
         progress.setMax(33);
+        progress.setCanceledOnTouchOutside(false);
         progress.show();
     }
 
-    public void onConnectHold() {
+    private void onConnectHold() {
         progress = new ProgressDialog(this);
         progress.setMessage("Connecting to Sensor");
         progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progress.setIndeterminate(true);
+        progress.setCanceledOnTouchOutside(false);
         progress.setProgress(0);
         progress.show();
     }
 
-    public void notifyOnAlert() {
+    private void notifyOnAlert() {
         new AlertDialog.Builder(this)
                 .setTitle("Shock Event!")
                 .setMessage("Shock Event Threshold of " + bsConfig.getShockThreshold() + " has been met!")
@@ -371,7 +391,7 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
-    public void notifyOnView() {
+    private void notifyOnView() {
         new AlertDialog.Builder(this)
                 .setTitle("Shock Details")
                 .setMessage("Shock details are ready to view. Would you like to view details?")
@@ -392,37 +412,58 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
-    public void dummyBtn(View V) {
-        Random randy = new Random();
+    private void notifyOnProg() {
+        new AlertDialog.Builder(this)
+                .setTitle("Programming Complete")
+                .setMessage("Programming Complete")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .create()
+                .show();
+    }
 
-        for(int i = 0; i<xData.length; i++) {
-            xData[i] = randy.nextInt(100);
+    private void notifyOnConnectionChange(int conStatus) {
+        String stringy = new String();
+
+        switch(conStatus) {
+            case CON_UNKWN:
+                stringy = "Connection State Unknown";
+                devTxtView.setText("");
+                bsConfig.setPAIRED(false);
+                break;
+            case CON_COND:
+                stringy = "Connection Established";
+                devTxtView.setText(myConnectedGatt.getDevice().getName());
+                bsConfig.setPAIRED(true);
+                break;
+            case CON_DCOND:
+                stringy = "Connection Lost";
+                devTxtView.setText("NOT CONNECTED");
+                bsConfig.setPAIRED(false);
+                break;
         }
 
-        SimpleDateFormat when = new SimpleDateFormat("yyyy-MM-dd@HH:mm:ss");
-        when.setTimeZone(TimeZone.getDefault());
-        String now = when.format(new Date(System.currentTimeMillis()));
+        progBtnCntl();
 
-        //TODO generate shock event and pass it to detail activity
-        ShockEvent shocking = new ShockEvent(bsConfig.generateShockID(), bsConfig.getShockThreshold(), now, bsConfig.getAxisBox());
-        shocking.setxData(xData);
-        shocking.setyData(yData);
-        shocking.setzData(zData);
-
-        Intent i = new Intent(this, DetailActivity.class);
-        i.putExtras(getIntent());
-        i.putExtra("EVENT", shocking);
-        i.putExtra("DATA", xData);
-
-        startActivityForResult(i, REQUEST_DETAIL_BT);
+        new AlertDialog.Builder(this)
+                .setTitle("Connection Status")
+                .setMessage(stringy)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .create()
+                .show();
     }
 
-    public void call_detail() {
-        if(axisXTxtView.getVisibility() == View.VISIBLE) getIntent().putExtra("XDATA", xData);
-        if(axisYTxtView.getVisibility() == View.VISIBLE) getIntent().putExtra("YDATA", yData);
-        if(axisZTxtView.getVisibility() == View.VISIBLE) getIntent().putExtra("ZDATA", zData);
-
-        SimpleDateFormat when = new SimpleDateFormat("yyyy-MM-dd@HH:mm");
+    private void call_detail() {
+        SimpleDateFormat when = new SimpleDateFormat("yyyy-MM-dd@HH:mm", Locale.US);
         when.setTimeZone(TimeZone.getDefault());
         String now = when.format(new Date(System.currentTimeMillis()));
 
@@ -434,12 +475,17 @@ public class MainActivity extends AppCompatActivity {
 
         Intent i = new Intent(this, DetailActivity.class);
         i.putExtra("EVENT", shocking);
-        i.putExtra("DATA", xData);
+
+        if(bsConfig.isxBoxSet()) i.putExtra("DATA", xData);
+        if(bsConfig.isyBoxSet()) i.putExtra("DATA", yData);
+        if(bsConfig.iszBoxSet()) i.putExtra("DATA", zData);
+
+        //i.putExtra("DATA", xData);
         i.putExtras(getIntent());
         startActivityForResult(i, REQUEST_DETAIL_BT);
     }
 
-    private BluetoothGattCallback myGattCallb = new BluetoothGattCallback() {
+    private final BluetoothGattCallback myGattCallb = new BluetoothGattCallback() {
         private final String TAG = "GATT-CALL-BACK";
 
             @Override
@@ -448,13 +494,26 @@ public class MainActivity extends AppCompatActivity {
 
                 if (status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothProfile.STATE_CONNECTED) {
                     Log.d(TAG, "STATE CONNECTED");
+
+                    Intent i = new Intent("team7.blueshock.ui");
+                    i.putExtra("CONSTATE", CON_COND);
+                    LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(i);
+
                     gatt.discoverServices();
                 }
                 else if (status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothProfile.STATE_DISCONNECTED) {
                     Log.d(TAG, "STATE DISCONNECTED");
+
+                    Intent i = new Intent("team7.blueshock.ui");
+                    i.putExtra("CONSTATE", CON_DCOND);
+                    LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(i);
                 }
                 else if (status != BluetoothGatt.GATT_SUCCESS) {
                     Log.d(TAG, "STATE DISCONNECTED");
+
+                    Intent i = new Intent("team7.blueshock.ui");
+                    i.putExtra("CONSTATE", CON_DCOND);
+                    LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(i);
                 }
             }
 
@@ -496,24 +555,20 @@ public class MainActivity extends AppCompatActivity {
                     UUID checky = characteristic.getUuid();
 
                     if (checky.compareTo(DATA_TXTOTAL) == 0) {
-                        txTotal = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8,0);
-                        Log.d(TAG, "TXTOTAL was read " + txTotal);
-
-                        Intent i = new Intent("team7.blueshock.ui");
-                        i.putExtra("TXCHAIN", true);
-                        LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(i);
+                        txTotal = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
+                        Log.d(TAG, "TXTOTAL: " + txTotal);
                     }
                     else if(checky.compareTo(DATA_XDATA) == 0) {
                         xData[txTotal] = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_SINT16, 0);
-                        Log.d(TAG, "xData----->" + xData[txTotal]);
+                        Log.d(TAG, "xData-----> " + xData[txTotal]);
                     }
                     else if(checky.compareTo(DATA_YDATA) == 0) {
-                        yData[txTotal] = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_SINT16,0);
-                            Log.d(TAG, "yData----->" + yData[txTotal]);
+                        yData[txTotal] = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_SINT16, 0);
+                            Log.d(TAG, "yData-----> " + yData[txTotal]);
                     }
                     else if(checky.compareTo(DATA_ZDATA) == 0) {
-                        zData[txTotal] = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_SINT16,0);
-                            Log.d(TAG, "zData----->" + zData[txTotal]);
+                        zData[txTotal] = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_SINT16, 0);
+                            Log.d(TAG, "zData-----> " + zData[txTotal]);
                     }
                 }
                 arby.process_Queue_N();
@@ -522,6 +577,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
                 super.onCharacteristicWrite(gatt, characteristic, status);
+
+                if(characteristic.getUuid().compareTo(CONFIG_AXIS) == 0) {
+                    Intent i = new Intent("team7.blueshock.ui");
+                    i.putExtra("PROG", true);
+                    LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(i);
+                }
+
                 arby.characteristicQueue.remove();
                 arby.process_Queue_N();
             }
@@ -534,44 +596,44 @@ public class MainActivity extends AppCompatActivity {
 
                 if(checkUUID.compareTo(ALERT_EVENT) == 0) {
                     Log.d(TAG, "ALERT characteristic changed");
+                    TXCOMP = false;
 
                     Intent i = new Intent("team7.blueshock.ui");
                     i.putExtra("ALERT", true);
                     LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(i);
                 }
                 else if(checkUUID.compareTo(DATA_TXTOTAL) == 0) {
-                    Log.d(TAG, "TXTOTAL characteristic changed. Starting at " + txTotal);
                     txTotal = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8,0);
+                    Log.d(TAG, "TXTOTAL characteristic changed. Starting at " + txTotal);
 
-                    if(axisXTxtView.getVisibility() == View.VISIBLE) {
+                    if(bsConfig.isxBoxSet()) {
                         Log.d(TAG, "on write X selected");
                         gatt.readCharacteristic(gatt.getService(ALERT_SERV).getCharacteristic(DATA_XDATA));
                     }
-                    else if(axisYTxtView.getVisibility() == View.VISIBLE) {
+                    else if(bsConfig.isyBoxSet()) {
                         Log.d(TAG, "on write Y selected");
                         gatt.readCharacteristic(gatt.getService(ALERT_SERV).getCharacteristic(DATA_YDATA));
                     }
-                    else if(axisYTxtView.getVisibility() == View.VISIBLE) {
+                    else if(bsConfig.iszBoxSet()) {
                         Log.d(TAG, "on write Z selected");
                         gatt.readCharacteristic(gatt.getService(ALERT_SERV).getCharacteristic(DATA_ZDATA));
                     }
-                    else if(axisXTxtView.getVisibility() == View.VISIBLE && axisZTxtView.getVisibility() == View.VISIBLE) {
+                    else if(bsConfig.isxBoxSet() && bsConfig.iszBoxSet()) {
                         Log.d(TAG, "on write X & Z selected");
                         gatt.readCharacteristic(gatt.getService(ALERT_SERV).getCharacteristic(DATA_XDATA));
                         gatt.readCharacteristic(gatt.getService(ALERT_SERV).getCharacteristic(DATA_ZDATA));
                     }
-                    else if(axisXTxtView.getVisibility() == View.VISIBLE && axisYTxtView.getVisibility() == View.VISIBLE) {
+                    else if(bsConfig.isxBoxSet() && bsConfig.isyBoxSet()) {
                         Log.d(TAG, "on write X & Y selected");
                         gatt.readCharacteristic(gatt.getService(ALERT_SERV).getCharacteristic(DATA_XDATA));
                         gatt.readCharacteristic(gatt.getService(ALERT_SERV).getCharacteristic(DATA_YDATA));
                     }
-                    else if(axisYTxtView.getVisibility() == View.VISIBLE && axisZTxtView.getVisibility() == View.VISIBLE) {
+                    else if(bsConfig.isyBoxSet() && bsConfig.iszBoxSet()) {
                         Log.d(TAG, "on write Y & Z selected");
                         gatt.readCharacteristic(gatt.getService(ALERT_SERV).getCharacteristic(DATA_YDATA));
                         gatt.readCharacteristic(gatt.getService(ALERT_SERV).getCharacteristic(DATA_ZDATA));
                     }
-                    else if(axisXTxtView.getVisibility() == View.VISIBLE && axisYTxtView.getVisibility() == View.VISIBLE &&
-                            axisZTxtView.getVisibility() == View.VISIBLE) {
+                    else if(bsConfig.isxBoxSet() && bsConfig.isyBoxSet() && bsConfig.iszBoxSet()) {
                         Log.d(TAG, "on write X, Y, Z selected");
                         gatt.readCharacteristic(gatt.getService(ALERT_SERV).getCharacteristic(DATA_XDATA));
                         gatt.readCharacteristic(gatt.getService(ALERT_SERV).getCharacteristic(DATA_YDATA));
@@ -582,7 +644,6 @@ public class MainActivity extends AppCompatActivity {
                     i.putExtra("TXCHAIN", true);
                     LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(i);
                 }
-                else Log.d(TAG, "Characteristic changed but was not identified by UUID" + characteristic.getValue().toString());
                 arby.process_Queue_N();
             }
 
@@ -607,8 +668,8 @@ public class MainActivity extends AppCompatActivity {
 
     private class Arbiter {
         private final String TAG = "ARB";
-        private Queue<BluetoothGattCharacteristic> characteristicQueue = new LinkedList<BluetoothGattCharacteristic>();
-        private Queue<BluetoothGattDescriptor> descriptorQueue = new LinkedList<BluetoothGattDescriptor>();
+        private Queue<BluetoothGattCharacteristic> characteristicQueue = new LinkedList<>();
+        private Queue<BluetoothGattDescriptor> descriptorQueue = new LinkedList<>();
 
         public void process_Queue_N() {
             if(characteristicQueue.size() > 0) myConnectedGatt.writeCharacteristic(characteristicQueue.element());
@@ -656,9 +717,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "DESC NOT NULL");
                 desc = character.getDescriptor(CHAR_UPDATE_NOT_DESC);
             }
-            else {
-                Log.d(TAG, "in DESC else statement");
-            }
+            else Log.d(TAG, "in DESC else statement");
+
             desc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
             myConnectedGatt.writeDescriptor(desc);
             Log.d(TAG, "Writing notification " + who.toString());

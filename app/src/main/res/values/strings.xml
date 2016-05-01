@@ -1,32 +1,17 @@
 <resources>
     <string name="app_name">BlueShock</string>
-    <string name="SEND">Program Device</string>
     <string name="shockthreshold">Shock Threshold</string>
-    <string name="dbgkbtn">Kill</string>
     <string name="xplane">X Plane</string>
     <string name="yplane">Y Plane</string>
     <string name="zplane">Z Plane</string>
     <string name="planesel">Select any axis you wish to monitor</string>
     <string name="prog">Program</string>
     <string name="scan">Scan</string>
-    <string name="title_activity_splash">SplashActivity</string>
     <string name="cancel">Cancel</string>
     <string name="select">Select Device</string>
-    <string name="hello">Hello World, splash</string>
-    <string name="splashtext">Low Power Wireless Shock Detection System</string>
-    <string name="splashby">by The BLEGEEs</string>
     <string name="splashimage">splashimage</string>
     <string name="title_activity_detail">DetailActivity</string>
-    <string name="time">Time: </string>
-    <string name="date">Date: </string>
-    <string name="sid">Event Id: </string>
-    <string name="sval">Shock Value: </string>
-    <string name="dbgdets">DBG-Details</string>
-    <string name="dbgclear">DBG-Clear</string>
-    <string name="title_activity_developer">Developer</string>
-    <string name="forevent">Force Shock Event</string>
-    <string name="fdets">Force Details Activity</string>
-    <string name="devbtn">Dev Opts</string>
+    <string name="sval">Shock Threshold: </string>
     <string name="rescan">Rescan</string>
     <string name="title_activity_config">Settings</string>
     <string name="configBtn">Setup</string>
@@ -41,6 +26,6 @@
     <string name="lastconn">Last Paired Device:</string>
     <string name="eventid">Shock Event ID:</string>
     <string name="datey">Date and Time:</string>
-    <string name="timey">TIme:</string>
-    <string name="pi">pi</string>
+    <string name="zero">0</string>
+    <string name="onetwenty">120</string>
 </resources>

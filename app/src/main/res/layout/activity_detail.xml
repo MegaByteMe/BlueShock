@@ -38,7 +38,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/shockthreshold"
+        android:text="@string/sval"
         android:id="@+id/textView5"
         android:layout_below="@+id/textView3"
         android:layout_alignParentStart="true" />
@@ -88,4 +88,24 @@
         android:layout_below="@+id/threshText"
         android:layout_alignStart="@+id/threshText"
         android:layout_alignEnd="@+id/threshText" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="@string/zero"
+        android:id="@+id/textView4"
+        android:layout_above="@+id/button3"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="42dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="@string/onetwenty"
+        android:id="@+id/textView7"
+        android:layout_above="@+id/textView4"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="60dp" />
 </RelativeLayout>

@@ -42,19 +42,17 @@ public class BlueShockConfig implements Parcelable{
 
     public int generateShockID() { return ++getShockID; }
 
-    public void setGetShockID(int getShockID) { this.getShockID = getShockID; }
-
     public boolean isxBoxSet() { return xBoxSet; }
 
     public boolean isyBoxSet() { return yBoxSet; }
 
     public boolean iszBoxSet() { return zBoxSet; }
 
-    public void setxBoxSet(boolean xBoxSet) { this.xBoxSet = xBoxSet; }
+    public void setxBoxSet(boolean xBoxSet) { this.xBoxSet = xBoxSet; AxisBox = AxisBox ^ 0b0100; }
 
-    public void setyBoxSet(boolean yBoxSet) { this.yBoxSet = yBoxSet; }
+    public void setyBoxSet(boolean yBoxSet) { this.yBoxSet = yBoxSet; AxisBox = AxisBox ^ 0b0010; }
 
-    public void setzBoxSet(boolean zBoxSet) { this.zBoxSet = zBoxSet; }
+    public void setzBoxSet(boolean zBoxSet) { this.zBoxSet = zBoxSet; AxisBox = AxisBox ^ 0b0001; }
 
     public BlueShockConfig() {
         this.shockThreshold = 0;
