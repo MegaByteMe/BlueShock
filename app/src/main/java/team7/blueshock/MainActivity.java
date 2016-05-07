@@ -258,35 +258,36 @@ public class MainActivity extends AppCompatActivity {
                     onConnectHold();
                 }
                 else if(intent.getBooleanExtra("TXCHAIN", false)) {
-                    if(txTotal > 0 && !SINGLETX) {
+                    if(txTotal > 0) {
                         txTotal--;
 
                         if (LOAD) onLoadHold();
                         LOAD = false;
 
+                        TXCOMP = false;
+
                         progress.incrementProgressBy(1);    // Increment loading dialog
 
                         arby.writeChar_N(DATA_TXTOTAL, txTotal);
                     }
-                    else if(txTotal > 0 && SINGLETX) {
-                        arby.writeChar_N(DATA_TXTOTAL, txTotal);
-                    }
                     else if(txTotal == 0) {
-                        LOAD = true;                    // Reset loading flag
+                        LOAD = true;                        // Reset loading flag
                         SINGLETX = false;
 
-                        if(!TXCOMP) arby.writeChar_N(DATA_TXTOTAL, txTotal);
+                        if(!TXCOMP) {
+                            arby.writeChar_N(DATA_TXTOTAL, txTotal);
+                            TXCOMP = true;                  // Reset transmission complete flag
+                        }
                         else {
                             // TODO: REMOVE - FOR DEBUGGING ONLY
-                            //for(int x = 0; x < xData.length; x++) Log.d(TAG, "----> " + xData[x]);
-
                             for (float f : xData) Log.d(TAG, "----> " + f);
+
+                            txTotal = 33;
 
                             Intent i = new Intent("team7.blueshock.ui");
                             i.putExtra("EVENTRDY", true);
                             LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(i);
                         }
-                        TXCOMP = true;                  // Reset transmission complete flag
                     }
                     else Log.d(TAG, "ERROR ON TXCHAIN PROCESS");
                 }
@@ -333,13 +334,17 @@ public class MainActivity extends AppCompatActivity {
     public void prgBtnClick(View V) {
         int axis_val = 0;
 
-        if(bsConfig.isxBoxSet()) axis_val |= 0b00000100;
-        if(bsConfig.isyBoxSet()) axis_val |= 0b00000010;
-        if(bsConfig.iszBoxSet()) axis_val |= 0b00000001;
+        if(bsConfig.isxBoxSet()) axis_val ^= xSet;
+        if(bsConfig.isyBoxSet()) axis_val ^= ySet;
+        if(bsConfig.iszBoxSet()) axis_val ^= zSet;
 
+        Log.d("DEBUG", "axis val ->" + axis_val + " " + xSet + " " + ySet + " " + zSet);
         bsConfig.setAxisBox(axis_val);
 
-        arby.writeChar_N(CONFIG_THRESH, bsConfig.getShockThreshold());
+        float threshadjust = bsConfig.getShockThreshold();
+        threshadjust /= 0.78;
+
+        arby.writeChar_N(CONFIG_THRESH, (int)threshadjust);
         arby.writeChar_N(CONFIG_AXIS, axis_val);
 
     }
@@ -410,6 +415,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 })
                 .setIcon(android.R.drawable.ic_dialog_alert)
+                .setCancelable(false)
                 .create()
                 .show();
     }
@@ -482,7 +488,6 @@ public class MainActivity extends AppCompatActivity {
         if(bsConfig.isyBoxSet()) i.putExtra("DATA", yData);
         if(bsConfig.iszBoxSet()) i.putExtra("DATA", zData);
 
-        //i.putExtra("DATA", xData);
         i.putExtras(getIntent());
         startActivityForResult(i, REQUEST_DETAIL_BT);
     }

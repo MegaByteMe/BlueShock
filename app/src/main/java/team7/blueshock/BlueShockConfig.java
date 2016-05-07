@@ -18,6 +18,7 @@ import android.os.Parcelable;
 public class BlueShockConfig implements Parcelable{
     private int shockThreshold, AxisBox, getShockID;
     private boolean SETUP, PAIRED, xBoxSet, yBoxSet, zBoxSet;
+    private final int xSet = 0b00000100, ySet = 0b00000010, zSet = 0b00000001;
 
     public boolean isPAIRED() { return PAIRED; }
 
@@ -48,11 +49,17 @@ public class BlueShockConfig implements Parcelable{
 
     public boolean iszBoxSet() { return zBoxSet; }
 
-    public void setxBoxSet(boolean xBoxSet) { this.xBoxSet = xBoxSet; AxisBox = AxisBox ^ 0b0100; }
+    public void setxBoxSet(boolean xBoxSet) { this.xBoxSet = xBoxSet;
+        //AxisBox ^= xSet;
+        }
 
-    public void setyBoxSet(boolean yBoxSet) { this.yBoxSet = yBoxSet; AxisBox = AxisBox ^ 0b0010; }
+    public void setyBoxSet(boolean yBoxSet) { this.yBoxSet = yBoxSet;
+        //AxisBox ^= ySet;
+        }
 
-    public void setzBoxSet(boolean zBoxSet) { this.zBoxSet = zBoxSet; AxisBox = AxisBox ^ 0b0001; }
+    public void setzBoxSet(boolean zBoxSet) { this.zBoxSet = zBoxSet;
+        //AxisBox ^= zSet;
+        }
 
     public BlueShockConfig() {
         this.shockThreshold = 0;
